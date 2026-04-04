@@ -13,6 +13,8 @@ let alarmInterval = null;
 let cheatModeActive = false;
 let cheatCodeEntered = "";
 let totalBlockedSeconds = 0;
+let wasScreenLocked = false; // Para detectar bloqueo físico
+let appChangeTime = 0; // Para detectar cambio de app
 const CHEAT_CODE = "409070110409070110409070110";
 
 // Inicializar cuando la página carga
@@ -254,10 +256,43 @@ function resetCounter(reason) {
     setTimeout(() => msg.remove(), 3000);
 }
 
+// DETECCIÓN INTELIGENTE: distingue bloqueo físico de cambio de app
 function setupDetection() {
+    // Detectar cuando la página se vuelve invisible (pestaña cambiada O teléfono bloqueado)
     document.addEventListener('visibilitychange', () => {
-        if (document.hidden && isBlocked && !isPlantingMode) {
-            resetCounter('Cambiaste de pestaña');
+        if (document.hidden) {
+            // La pantalla se ocultó - puede ser bloqueo o cambio de pestaña
+            wasScreenLocked = true;
+            appChangeTime = Date.now();
+        } else {
+            // La pantalla se mostró nuevamente
+            const timeHidden = Date.now() - appChangeTime;
+            
+            // Si estuvo oculta menos de 3 segundos, probable fue bloqueo rápido
+            // Si estuvo oculta más de 3 segundos, fue cambio de pestaña/app
+            if (wasScreenLocked && isBlocked && !isPlantingMode && timeHidden > 3000) {
+                resetCounter('Cambiaste de aplicación/pestaña');
+            }
+            wasScreenLocked = false;
+        }
+    });
+    
+    // Detectar pérdida de foco (cambio de aplicación en móvil)
+    let lostFocusTime = 0;
+    window.addEventListener('blur', () => {
+        if (isBlocked && !isPlantingMode) {
+            lostFocusTime = Date.now();
+        }
+    });
+    
+    window.addEventListener('focus', () => {
+        if (isBlocked && !isPlantingMode && lostFocusTime > 0) {
+            const timeAway = Date.now() - lostFocusTime;
+            // Más de 3 segundos fuera = cambio de app real
+            if (timeAway > 3000) {
+                resetCounter('Cambiaste de aplicación');
+            }
+            lostFocusTime = 0;
         }
     });
 }
