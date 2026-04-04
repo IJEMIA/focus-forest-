@@ -1,6 +1,6 @@
 // Configuración
 const TREES_COUNT = 15;
-const UNLOCK_DURATION = 300; // 5 minutos para plantar
+const UNLOCK_DURATION = 300;
 
 let currentFocusTime = 0;
 let focusInterval = null;
@@ -9,15 +9,14 @@ let selectedTreeIndex = 1;
 let plantedTrees = [];
 let userName = "";
 let isPlantingMode = false;
-let violationCount = 0;
 
-// Calcular costo: árbol 1 = 15min, 2 = 30min...
+// Calcular costo
 function getTreeCost(treeNumber) {
     if (treeNumber === 'test') return 1;
     return treeNumber * 15;
 }
 
-// Formatear minutos
+// Formatear tiempo
 function formatTime(minutes) {
     if (minutes === 1) return '1 min';
     if (minutes < 60) return `${minutes} min`;
@@ -50,24 +49,17 @@ function loadSavedData() {
 // Alarma
 function playAlarm() {
     try {
-        const audio = new Audio();
-        audio.src = "data:audio/wav;base64,U3RlYWx0aCBzb3VuZA==";
-        audio.play().catch(() => {
-            const beep = () => {
-                const context = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = context.createOscillator();
-                const gain = context.createGain();
-                oscillator.connect(gain);
-                gain.connect(context.destination);
-                oscillator.frequency.value = 880;
-                gain.gain.value = 0.3;
-                oscillator.start();
-                gain.gain.exponentialRampToValueAtTime(0.00001, context.currentTime + 2);
-                oscillator.stop(context.currentTime + 2);
-                setTimeout(() => context.close(), 3000);
-            };
-            beep();
-        });
+        const context = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+        oscillator.connect(gain);
+        gain.connect(context.destination);
+        oscillator.frequency.value = 880;
+        gain.gain.value = 0.3;
+        oscillator.start();
+        gain.gain.exponentialRampToValueAtTime(0.00001, context.currentTime + 2);
+        oscillator.stop(context.currentTime + 2);
+        setTimeout(() => context.close(), 3000);
     } catch(e) {
         console.log("Audio no disponible");
     }
@@ -84,7 +76,6 @@ async function authenticateUser() {
             width: 100%;
             height: 100%;
             background: rgba(0,0,0,0.95);
-            backdrop-filter: blur(20px);
             z-index: 30000;
             display: flex;
             justify-content: center;
@@ -92,36 +83,18 @@ async function authenticateUser() {
         `;
         modal.innerHTML = `
             <div style="background:white; border-radius:32px; padding:32px; text-align:center; max-width:320px; width:90%;">
-                <div style="font-size:48px; margin-bottom:16px;">🔐</div>
+                <div style="font-size:48px;">🔐</div>
                 <h2>Verificar identidad</h2>
                 <p style="color:#666; margin:16px 0;">${userName}</p>
-                <button id="auth-biometric" style="width:100%; padding:14px; background:#4caf50; color:white; border:none; border-radius:14px; margin-bottom:12px;">🔓 Huella / Face ID</button>
-                <button id="auth-pin" style="width:100%; padding:14px; background:#666; color:white; border:none; border-radius:14px;">🔢 Código PIN</button>
-                <div id="pin-box" style="display:none; margin-top:16px;">
-                    <input type="password" id="pin-input" maxlength="4" placeholder="1234" style="width:100%; padding:14px; border-radius:14px; border:1px solid #ddd; text-align:center; font-size:20px;">
-                    <button id="pin-verify" style="width:100%; margin-top:12px; padding:14px; background:#4caf50; color:white; border:none; border-radius:14px;">Verificar</button>
-                </div>
+                <button id="auth-ok" style="width:100%; padding:14px; background:#4caf50; color:white; border:none; border-radius:14px;">🔓 Autorizar</button>
                 <button id="auth-cancel" style="background:none; border:none; color:#999; margin-top:16px;">Cancelar</button>
             </div>
         `;
         document.body.appendChild(modal);
         
-        document.getElementById('auth-biometric').onclick = () => {
+        document.getElementById('auth-ok').onclick = () => {
             modal.remove();
             resolve(true);
-        };
-        document.getElementById('auth-pin').onclick = () => {
-            document.getElementById('pin-box').style.display = 'block';
-        };
-        document.getElementById('pin-verify').onclick = () => {
-            const pin = document.getElementById('pin-input').value;
-            if (pin === "1234") {
-                modal.remove();
-                resolve(true);
-            } else {
-                alert("PIN incorrecto");
-                resolve(false);
-            }
         };
         document.getElementById('auth-cancel').onclick = () => {
             modal.remove();
@@ -157,8 +130,8 @@ function showViewCounterButton() {
             const mins = Math.floor(currentFocusTime / 60);
             const secs = currentFocusTime % 60;
             const modal = document.createElement('div');
-            modal.style.cssText = `position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); backdrop-filter:blur(20px); z-index:30001; display:flex; justify-content:center; align-items:center; flex-direction:column;`;
-            modal.innerHTML = `<div style="text-align:center;"><div style="font-size:72px;">⏱️</div><div style="font-size:64px; font-weight:bold;">${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}</div><p style="margin-top:20px;">Tiempo restante de enfoque</p><p style="font-size:12px; color:#999; margin-top:20px;">Toca para cerrar</p></div>`;
+            modal.style.cssText = `position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:30001; display:flex; justify-content:center; align-items:center; flex-direction:column;`;
+            modal.innerHTML = `<div style="text-align:center;"><div style="font-size:72px;">⏱️</div><div style="font-size:64px; font-weight:bold;">${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}</div><p style="margin-top:20px;">Tiempo restante</p></div>`;
             document.body.appendChild(modal);
             modal.onclick = () => modal.remove();
             setTimeout(() => modal.remove(), 10000);
@@ -197,31 +170,18 @@ function plantTestTree(x, y) {
             updateStats();
         }
     }, 5 * 60 * 1000);
-    
-    const msg = document.createElement('div');
-    msg.textContent = `🌱 Árbol de prueba plantado! (1 min, desaparece en 5 min)`;
-    msg.style.cssText = `position:fixed; bottom:20px; right:20px; background:#4caf50; color:white; padding:12px 20px; border-radius:30px; z-index:9999;`;
-    document.body.appendChild(msg);
-    setTimeout(() => msg.remove(), 3000);
 }
 
 // Reiniciar contador
 function resetCounter(reason) {
     if (!isBlocked) return;
-    violationCount++;
     if (focusInterval) clearInterval(focusInterval);
     isBlocked = false;
     isPlantingMode = false;
     currentFocusTime = 0;
     document.getElementById('blocker').classList.remove('active');
-    document.getElementById('mode-status').innerText = 'Reiniciado';
+    document.getElementById('mode-status').innerText = 'Libre';
     hideViewCounterButton();
-    
-    const msg = document.createElement('div');
-    msg.textContent = `⚠️ ${reason} - Contador reiniciado`;
-    msg.style.cssText = `position:fixed; bottom:20px; left:20px; background:#f44336; color:white; padding:12px 20px; border-radius:30px; z-index:9999;`;
-    document.body.appendChild(msg);
-    setTimeout(() => msg.remove(), 3000);
 }
 
 // Detectar cambios
@@ -231,9 +191,6 @@ function setupDetection() {
     });
     window.addEventListener('blur', () => {
         if (isBlocked) resetCounter('Saliste de la ventana');
-    });
-    document.addEventListener('keydown', (e) => {
-        if (isBlocked && e.key !== 'Escape') resetCounter(`Tecla presionada: ${e.key}`);
     });
 }
 
@@ -315,9 +272,7 @@ function selectTree(treeNumber) {
     
     const startBtn = document.getElementById('start-tree-btn');
     if (startBtn) {
-        const newBtn = startBtn.cloneNode(true);
-        startBtn.parentNode.replaceChild(newBtn, startBtn);
-        newBtn.onclick = () => startFocus();
+        startBtn.onclick = () => startFocus();
     }
 }
 
@@ -400,4 +355,126 @@ function unlockToPlant() {
 
 // Plantar árbol
 function plantTree(x, y) {
-    if (isBlocked
+    if (isBlocked) {
+        alert(`🔒 ${userName}, espera a que termine el enfoque`);
+        return;
+    }
+    if (!isPlantingMode) {
+        alert(`🌱 ${userName}, primero completa la cuenta regresiva`);
+        return;
+    }
+    
+    if (selectedTreeIndex === 'test') {
+        plantTestTree(x, y);
+    } else {
+        const costMinutes = getTreeCost(selectedTreeIndex);
+        const tree = {
+            id: Date.now(),
+            number: selectedTreeIndex,
+            cost: costMinutes,
+            x: x,
+            y: y,
+            plantedAt: new Date().toISOString()
+        };
+        plantedTrees.push(tree);
+        renderGarden();
+        saveData();
+        updateStats();
+    }
+    
+    if (window.plantTimeout) clearTimeout(window.plantTimeout);
+    isPlantingMode = false;
+    document.getElementById('mode-status').innerText = '✅ Completado';
+    document.getElementById('next-unlock').innerText = 'Elige otro';
+    
+    const msg = document.createElement('div');
+    msg.textContent = `✅ ¡Árbol plantado, ${userName}!`;
+    msg.style.cssText = `position:fixed; bottom:20px; right:20px; background:#4caf50; color:white; padding:12px 20px; border-radius:30px; z-index:9999;`;
+    document.body.appendChild(msg);
+    setTimeout(() => msg.remove(), 3000);
+}
+
+// Renderizar jardín
+function renderGarden() {
+    const garden = document.getElementById('garden');
+    if (!garden) return;
+    garden.innerHTML = '';
+    
+    plantedTrees.forEach((tree, idx) => {
+        const treeDiv = document.createElement('div');
+        treeDiv.className = 'tree-planted';
+        treeDiv.style.left = `${tree.x || (idx * 70 % 800)}px`;
+        treeDiv.style.top = `${tree.y || (Math.floor(idx / 12) * 70)}px`;
+        
+        if (tree.isTest) {
+            treeDiv.innerHTML = `
+                <div style="font-size:48px;">🌲</div>
+                <div class="tree-tooltip">Árbol de Prueba | 1 min</div>
+            `;
+        } else {
+            treeDiv.innerHTML = `
+                <img src="trees/${tree.number}.png" onerror="this.src='https://via.placeholder.com/55'">
+                <div class="tree-tooltip">Árbol #${tree.number} | ${formatTime(tree.cost)}</div>
+            `;
+        }
+        
+        treeDiv.onclick = (e) => {
+            e.stopPropagation();
+            if (confirm(`${userName}, ¿eliminar este árbol?`)) {
+                plantedTrees.splice(idx, 1);
+                renderGarden();
+                saveData();
+                updateStats();
+            }
+        };
+        garden.appendChild(treeDiv);
+    });
+}
+
+// Actualizar estadísticas
+function updateStats() {
+    const realTrees = plantedTrees.filter(t => !t.isTest);
+    document.getElementById('tree-count').innerText = realTrees.length;
+    const totalTime = realTrees.reduce((sum, tree) => sum + (tree.cost || 0), 0);
+    document.getElementById('total-time').innerText = formatTime(totalTime);
+}
+
+// Limpiar jardín
+function clearGarden() {
+    if (confirm(`⚠️ ${userName}, ¿eliminar TODOS los árboles?`)) {
+        plantedTrees = plantedTrees.filter(t => t.isTest);
+        renderGarden();
+        saveData();
+        updateStats();
+    }
+}
+
+// Configurar clic en jardín
+function setupGardenClick() {
+    const garden = document.getElementById('garden');
+    if (garden) {
+        garden.addEventListener('click', (e) => {
+            const rect = garden.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            plantTree(x, y);
+        });
+    }
+}
+
+// Inicializar
+function init() {
+    loadSavedData();
+    setupGardenClick();
+    setupDetection();
+    
+    if (userName) {
+        document.getElementById('user-name').value = userName;
+        startApp();
+    }
+    
+    document.getElementById('start-btn').onclick = startApp;
+    document.getElementById('clear-garden').onclick = clearGarden;
+}
+
+window.onload = init;
