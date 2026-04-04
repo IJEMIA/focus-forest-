@@ -3,20 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Focus Forest - Jardín con bloqueo de celular</title>
+    <title>Focus Forest - Jardín de Enfoque</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Pantalla de bienvenida -->
     <div id="welcome-screen">
         <div class="welcome-card">
             <div class="welcome-icon">🌳</div>
             <h1>Focus Forest</h1>
-            <p>Bienvenido a tu jardín de enfoque</p>
+            <p>Tu jardín de concentración y recompensa</p>
             <input type="text" id="user-name" placeholder="Tu nombre" maxlength="30" autocomplete="off">
-            <button id="start-btn" class="btn-primary">🌱 Comenzar mi jardín 🌱</button>
+            <button id="start-btn" class="btn-primary">🌱 Comenzar mi jardín</button>
+            <p class="cheat-hint">(Modo prueba: ingresa el código secreto)</p>
         </div>
     </div>
 
+    <!-- Overlay de bloqueo -->
     <div id="blocker">
         <div class="blocker-content">
             <div class="lock-icon">🔒</div>
@@ -38,9 +44,11 @@
         </div>
     </div>
 
+    <!-- Interfaz principal -->
     <div id="main-app" style="display: none;">
         <div class="container">
-            <div class="tree-menu glass">
+            <!-- Panel izquierdo: Tienda -->
+            <div class="tree-menu card">
                 <div class="menu-tabs">
                     <button id="tab-trees" class="tab-btn active">🌳 Árboles</button>
                     <button id="tab-animals" class="tab-btn">🐾 Animales</button>
@@ -49,7 +57,8 @@
                 <div id="animal-list" class="item-list" style="display: none;"></div>
             </div>
 
-            <div class="garden-container glass">
+            <!-- Panel central: Jardín -->
+            <div class="garden-container card">
                 <div class="garden-header">
                     <h3 id="garden-title">🌱 Mi Jardín</h3>
                     <div class="stats">
@@ -67,21 +76,24 @@
                         </div>
                     </div>
                 </div>
-                <canvas id="garden-canvas" class="garden-canvas"></canvas>
-                <div id="entities-overlay" class="entities-overlay"></div>
+                <div class="garden-area">
+                    <canvas id="garden-canvas" class="garden-canvas"></canvas>
+                    <div id="entities-overlay" class="entities-overlay"></div>
+                </div>
                 <div class="garden-controls">
                     <div class="color-picker-container">
-                        <label>🎨 Color pincel:</label>
+                        <label>🎨 Pincel:</label>
                         <input type="color" id="brush-color" value="#4caf50">
-                        <button id="toggle-coloring-mode" class="btn-small" style="background:#666;">🎨 Modo Coloreo: DESACTIVADO</button>
-                        <button id="reset-all-colors" class="btn-small">Reset todo</button>
+                        <button id="toggle-coloring-mode" class="btn-secondary btn-small">Modo Coloreo: OFF</button>
+                        <button id="reset-all-colors" class="btn-secondary btn-small">Reset</button>
                     </div>
                     <button id="clear-garden" class="btn-danger">🗑️ Limpiar Jardín</button>
                 </div>
             </div>
 
-            <div class="status-panel glass">
-                <h3>📊 Estado</h3>
+            <!-- Panel derecho: Estado -->
+            <div class="status-panel card">
+                <h3>📊 Estado del Jardinero</h3>
                 <div class="status-card">
                     <div class="status-item">
                         <span class="status-icon">👤</span>
@@ -100,14 +112,14 @@
                     <div class="status-item">
                         <span class="status-icon">⏰</span>
                         <div>
-                            <span class="status-label">Estado</span>
+                            <span class="status-label">Para añadir</span>
                             <span class="status-value" id="next-unlock">---</span>
                         </div>
                     </div>
                     <div class="status-item">
                         <span class="status-icon">🔒</span>
                         <div>
-                            <span class="status-label">Tiempo bloqueado</span>
+                            <span class="status-label">Enfoque acumulado</span>
                             <span class="status-value" id="total-blocked-time">0 min</span>
                         </div>
                     </div>
