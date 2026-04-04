@@ -13,7 +13,7 @@
             <div class="welcome-icon">🌳</div>
             <h1>Focus Forest</h1>
             <p>Bienvenido a tu jardín de enfoque</p>
-            <input type="text" id="user-name" placeholder="Tu nombre" maxlength="30">
+            <input type="text" id="user-name" placeholder="Tu nombre" maxlength="30" autocomplete="off">
             <button id="start-btn" class="btn-primary">🌱 Comenzar mi jardín 🌱</button>
         </div>
     </div>
@@ -43,11 +43,10 @@
     <!-- Interfaz principal -->
     <div id="main-app" style="display: none;">
         <div class="container">
-            <!-- Panel superior móvil: Menú de árboles (colapsable) -->
+            <!-- Panel superior: Menú de árboles -->
             <div class="tree-menu glass">
-                <div class="menu-header" onclick="toggleTreeMenu()">
+                <div class="menu-header">
                     <h2>🌳 Tienda de Árboles</h2>
-                    <span class="menu-toggle">▼</span>
                 </div>
                 <div id="tree-list" class="tree-list"></div>
             </div>
@@ -73,40 +72,42 @@
                 </div>
             </div>
 
-            <!-- Panel inferior móvil: Estado actual -->
+            <!-- Panel derecho: Estado actual -->
             <div class="status-panel glass">
-                <div class="status-header" onclick="toggleStatusPanel()">
-                    <h3>📊 Estado</h3>
-                    <span class="status-toggle">▼</span>
+                <h3>📊 Estado</h3>
+                <div class="status-card">
+                    <div class="status-item">
+                        <span class="status-icon">👤</span>
+                        <div>
+                            <span class="status-label">Jardinero</span>
+                            <span class="status-value" id="user-name-display">---</span>
+                        </div>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-icon">🟢</span>
+                        <div>
+                            <span class="status-label">Modo</span>
+                            <span class="status-value" id="mode-status">Libre</span>
+                        </div>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-icon">⏰</span>
+                        <div>
+                            <span class="status-label">Estado</span>
+                            <span class="status-value" id="next-unlock">---</span>
+                        </div>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-icon">🔒</span>
+                        <div>
+                            <span class="status-label">Tiempo bloqueado</span>
+                            <span class="status-value" id="total-blocked-time">0 min</span>
+                        </div>
+                    </div>
                 </div>
-                <div id="status-content" class="status-content">
-                    <div class="status-card">
-                        <div class="status-item">
-                            <span class="status-icon">👤</span>
-                            <div>
-                                <span class="status-label">Jardinero</span>
-                                <span class="status-value" id="user-name-display">---</span>
-                            </div>
-                        </div>
-                        <div class="status-item">
-                            <span class="status-icon">🟢</span>
-                            <div>
-                                <span class="status-label">Modo</span>
-                                <span class="status-value" id="mode-status">Libre</span>
-                            </div>
-                        </div>
-                        <div class="status-item">
-                            <span class="status-icon">⏰</span>
-                            <div>
-                                <span class="status-label">Estado</span>
-                                <span class="status-value" id="next-unlock">---</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="selected-tree">
-                        <h4>🌲 Selección actual</h4>
-                        <div id="selected-display" class="selected-card">Ninguno</div>
-                    </div>
+                <div id="selected-tree">
+                    <h4>🌲 Selección actual</h4>
+                    <div id="selected-display" class="selected-card">Ninguno</div>
                 </div>
             </div>
         </div>
