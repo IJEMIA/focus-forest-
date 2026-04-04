@@ -8,7 +8,7 @@ let selectedTreeIndex = 1;
 let plantedTrees = [];
 let userName = "";
 let isPlantingMode = false;
-let violationCount = 0; // Contador de infracciones
+let violationCount = 0;
 
 // Calcular costo: árbol 1 = 15min, 2 = 30min, 3 = 45min... 15 = 225min
 function getTreeCost(treeNumber) {
@@ -24,7 +24,7 @@ function formatTime(minutes) {
     return `${hours}h ${mins}min`;
 }
 
-// Guardar datos (incluye nombre)
+// Guardar datos
 function saveData() {
     localStorage.setItem('focusForest', JSON.stringify({
         userName: userName,
@@ -47,24 +47,20 @@ function loadSavedData() {
     }
 }
 
-// REINICIAR CONTADOR COMPLETAMENTE
+// REINICIAR CONTADOR (solo si está activo)
 function resetCounter(reason) {
     if (!isBlocked) return;
     
-    // Incrementar infracciones
     violationCount++;
     
-    // Detener timer actual
     if (focusInterval) {
         clearInterval(focusInterval);
         focusInterval = null;
     }
     
-    // Guardar el tiempo que llevaba para el mensaje
     const elapsedSeconds = (getTreeCost(selectedTreeIndex) * 60) - currentFocusTime;
     const elapsedMinutes = Math.floor(elapsedSeconds / 60);
     
-    // Mostrar mensaje de infracción
     const violationMsg = document.createElement('div');
     violationMsg.style.cssText = `
         position: fixed;
@@ -91,27 +87,16 @@ function resetCounter(reason) {
     `;
     document.body.appendChild(violationMsg);
     
-    // Reproducir sonido de alerta (si se permite)
-    try {
-        const audio = new Audio('data:audio/wav;base64,U3RlYWx0aCBzb3VuZCBub3QgYXZhaWxhYmxl');
-        audio.play().catch(e => console.log('Audio no soportado'));
-    } catch(e) {}
-    
     setTimeout(() => violationMsg.remove(), 4000);
     
-    // REINICIAR TODO
     isBlocked = false;
     isPlantingMode = false;
     currentFocusTime = 0;
     
-    // Ocultar bloqueador
     document.getElementById('blocker').classList.remove('active');
-    
-    // Actualizar estado
     document.getElementById('mode-status').innerText = 'Reiniciado por infracción';
     document.getElementById('next-unlock').innerText = 'Vuelve a empezar';
     
-    // Mensaje adicional
     const footerMsg = document.createElement('div');
     footerMsg.style.cssText = `
         position: fixed;
@@ -131,7 +116,7 @@ function resetCounter(reason) {
     setTimeout(() => footerMsg.remove(), 3000);
 }
 
-// Detectar cambios de visibilidad de la pestaña (REINICIA)
+// Detectar cambios SOLO cuando el contador está activo
 function setupStrictDetection() {
     // Detectar cambio de pestaña
     document.addEventListener('visibilitychange', () => {
@@ -147,27 +132,33 @@ function setupStrictDetection() {
         }
     });
     
-    // Detectar clics fuera del bloqueador (solo si está activo)
+    // Detectar clics fuera del bloqueador (solo si el contador está activo)
     document.addEventListener('click', (e) => {
         if (isBlocked) {
             const blocker = document.getElementById('blocker');
             const isClickInsideBlocker = blocker && blocker.contains(e.target);
             
+            // Permitir clics dentro del bloqueador
             if (!isClickInsideBlocker) {
                 resetCounter('👆 Tocaste fuera del contador de enfoque');
             }
         }
     });
     
-    // Detectar teclas (excepto las permitidas)
+    // Detectar teclas (solo durante bloqueo)
     document.addEventListener('keydown', (e) => {
         if (isBlocked) {
-            // Teclas permitidas: ninguna (todo reinicia)
+            // Prevenir comportamiento por defecto de algunas teclas
+            if (e.key === 'F5' || e.key === 'F12' || 
+                (e.ctrlKey && e.key === 'r') ||
+                (e.ctrlKey && e.key === 'R')) {
+                e.preventDefault();
+            }
             resetCounter(`⌨️ Presionaste la tecla: ${e.key}`);
         }
     });
     
-    // Detectar touch en móvil fuera del bloqueador
+    // Detectar touch fuera del bloqueador
     document.addEventListener('touchstart', (e) => {
         if (isBlocked) {
             const blocker = document.getElementById('blocker');
@@ -179,21 +170,21 @@ function setupStrictDetection() {
         }
     });
     
-    // Detectar scroll fuera del bloqueador
+    // Detectar scroll (solo durante bloqueo)
     window.addEventListener('scroll', () => {
         if (isBlocked) {
             resetCounter('📜 Intentaste hacer scroll fuera del contador');
         }
     });
     
-    // Detectar resize de ventana
+    // Detectar resize de ventana (solo durante bloqueo)
     window.addEventListener('resize', () => {
         if (isBlocked) {
             resetCounter('🖥️ Cambiaste el tamaño de la ventana');
         }
     });
     
-    // Detectar si el usuario intenta abrir herramientas de desarrollador
+    // Prevenir menú contextual solo durante bloqueo
     document.addEventListener('contextmenu', (e) => {
         if (isBlocked) {
             e.preventDefault();
@@ -201,7 +192,7 @@ function setupStrictDetection() {
         }
     });
     
-    // Detectar F12, Ctrl+Shift+I, Ctrl+U (herramientas dev)
+    // Detectar herramientas de desarrollador solo durante bloqueo
     document.addEventListener('keydown', (e) => {
         if (isBlocked) {
             if (e.key === 'F12' || 
@@ -223,18 +214,14 @@ function startApp() {
         return;
     }
     
-    // Guardar nombre
     saveData();
     
-    // Actualizar UI
     document.getElementById('user-name-display').innerText = userName;
     document.getElementById('garden-title').innerHTML = `🌱 Jardín de ${userName} 🌱`;
     
-    // Ocultar bienvenida y mostrar app
     document.getElementById('welcome-screen').style.display = 'none';
     document.getElementById('main-app').style.display = 'block';
     
-    // Generar menú y cargar datos
     generateTreeMenu();
     renderGarden();
     updateStats();
@@ -273,8 +260,9 @@ function selectTree(treeNumber) {
         <p><strong>Árbol #${treeNumber}</strong></p>
         <p>💰 Costo: ${formatTime(cost)}</p>
         <button id="start-tree-btn" class="btn-primary" style="margin-top:15px; width:100%">🌱 Comenzar cuenta regresiva 🌱</button>
-        <p style="font-size:11px; color:#666; margin-top:10px">⚠️ Primero elige el árbol, luego haz clic en el botón</p>
-        <p style="font-size:10px; color:#f44336; margin-top:10px">🔒 NO hagas NADA fuera del contador o se REINICIARÁ</p>
+        <p style="font-size:11px; color:#666; margin-top:10px">✅ 1. Elige un árbol</p>
+        <p style="font-size:11px; color:#666">✅ 2. Haz clic en "Comenzar cuenta regresiva"</p>
+        <p style="font-size:10px; color:#f44336; margin-top:10px">🔒 Durante el contador NO hagas NADA fuera de esta pantalla</p>
     `;
     
     const startBtn = document.getElementById('start-tree-btn');
@@ -297,16 +285,16 @@ function startFocusForSelectedTree() {
     
     isBlocked = true;
     isPlantingMode = false;
-    violationCount = 0; // Reiniciar contador de infracciones para este intento
+    violationCount = 0;
     
     document.getElementById('blocker').classList.add('active');
-    document.getElementById('mode-status').innerText = 'ENFOQUE ACTIVO';
+    document.getElementById('mode-status').innerText = '🔴 ENFOQUE ACTIVO';
     document.getElementById('next-unlock').innerText = formatTime(focusMinutes);
     document.getElementById('blocker-message').innerHTML = `
         ${userName}, estás cultivando el Árbol #${selectedTreeIndex} 🌱<br>
         <small style="color:#ffd700">⚠️ NO toques NADA fuera de esta pantalla o se REINICIARÁ ⚠️</small>
         <br>
-        <small style="color:#ff9800">Infracciones permitidas: 0</small>
+        <small style="color:#ff9800">Queda terminantemente prohibido salir de esta pantalla</small>
     `;
     
     updateBlockerTimer();
@@ -342,7 +330,7 @@ function unlockForPlanting() {
     isPlantingMode = true;
     
     document.getElementById('blocker').classList.remove('active');
-    document.getElementById('mode-status').innerText = 'TIEMPO DE PLANTAR';
+    document.getElementById('mode-status').innerText = '🟢 TIEMPO DE PLANTAR';
     document.getElementById('next-unlock').innerText = `${UNLOCK_DURATION} segundos`;
     
     const msg = document.createElement('div');
@@ -439,7 +427,7 @@ function plantTree(x, y) {
     document.body.appendChild(msg);
     setTimeout(() => msg.remove(), 3000);
     
-    document.getElementById('mode-status').innerText = 'Completado';
+    document.getElementById('mode-status').innerText = '✅ Completado';
     document.getElementById('next-unlock').innerText = 'Elige otro árbol';
 }
 
@@ -521,11 +509,6 @@ function addAnimations() {
             70% { opacity: 1; }
             100% { opacity: 0; visibility: hidden; }
         }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
     `;
     document.head.appendChild(style);
 }
@@ -534,7 +517,7 @@ function addAnimations() {
 function init() {
     loadSavedData();
     setupGardenClick();
-    setupStrictDetection(); // DETECCIÓN ESTRICTA QUE REINICIA
+    setupStrictDetection();
     addAnimations();
     
     if (userName) {
