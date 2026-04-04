@@ -10,48 +10,63 @@
     <!-- Pantalla de bienvenida para preguntar nombre -->
     <div id="welcome-screen">
         <div class="welcome-card">
-            <h1>🌳 Focus Forest 🌳</h1>
+            <div class="welcome-icon">🌳</div>
+            <h1>Focus Forest</h1>
             <p>Bienvenido a tu jardín de enfoque</p>
-            <input type="text" id="user-name" placeholder="Escribe tu nombre" maxlength="30" autocomplete="off">
-            <button id="start-btn" class="btn-primary">🌱 Comenzar mi jardín 🌱</button>
+            <input type="text" id="user-name" placeholder="Tu nombre" maxlength="30" autocomplete="off">
+            <button id="start-btn" class="btn-primary">🌱 Comenzar 🌱</button>
         </div>
     </div>
 
-    <!-- Overlay de bloqueo del celular - PANTALLA COMPLETA SIN SALIDA -->
+    <!-- Overlay de bloqueo del celular - PANTALLA COMPLETA ESTILO APPLE -->
     <div id="blocker">
         <div class="blocker-content">
             <div class="lock-icon">🔒</div>
-            <h1>MODO ENFOQUE</h1>
+            <h1>Modo Enfoque</h1>
             <p id="blocker-message">Estás cultivando tu concentración</p>
             <div class="timer-display">
                 <span id="timer">00:00</span>
             </div>
-            <div class="progress-bar">
-                <div id="progress-fill"></div>
+            <div class="progress-ring">
+                <svg width="200" height="200" viewBox="0 0 200 200">
+                    <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="8"/>
+                    <circle id="progress-ring-circle" cx="100" cy="100" r="90" fill="none" stroke="#4caf50" stroke-width="8" stroke-linecap="round" 
+                            stroke-dasharray="565.48" stroke-dashoffset="565.48" transform="rotate(-90 100 100)"/>
+                </svg>
+                <div class="progress-percentage" id="progress-percentage">0%</div>
             </div>
             <div class="blocker-footer">
-                <p>⚠️ NO cierres ni cambies de aplicación ⚠️</p>
+                <p>⚠️ No cierres ni cambies de aplicación</p>
                 <p class="small-text">El contador se reiniciará si lo haces</p>
             </div>
         </div>
     </div>
 
-    <!-- Interfaz principal (oculta hasta que ponga nombre) -->
+    <!-- Interfaz principal -->
     <div id="main-app" style="display: none;">
         <div class="container">
             <!-- Panel izquierdo: Menú de árboles -->
-            <div class="tree-menu">
-                <h2>🌳 Tienda de Árboles</h2>
+            <div class="tree-menu glass">
+                <div class="menu-header">
+                    <h2>🌳 Tienda</h2>
+                    <span class="badge">15 árboles</span>
+                </div>
                 <div id="tree-list" class="tree-list"></div>
             </div>
 
             <!-- Panel central: Jardín -->
-            <div class="garden-container">
+            <div class="garden-container glass">
                 <div class="garden-header">
                     <h3 id="garden-title">🌱 Mi Jardín</h3>
                     <div class="stats">
-                        <span>🌲 Árboles: <span id="tree-count">0</span></span>
-                        <span>⏱️ Tiempo total: <span id="total-time">0</span> min</span>
+                        <div class="stat-card">
+                            <span class="stat-value" id="tree-count">0</span>
+                            <span class="stat-label">Árboles</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value" id="total-time">0</span>
+                            <span class="stat-label">Minutos</span>
+                        </div>
                     </div>
                 </div>
                 <div id="garden" class="garden"></div>
@@ -61,20 +76,43 @@
             </div>
 
             <!-- Panel derecho: Estado actual -->
-            <div class="status-panel">
+            <div class="status-panel glass">
                 <h3>📊 Estado</h3>
-                <div id="focus-status">
-                    <p>👤 <strong>Jardinero:</strong> <span id="user-name-display">---</span></p>
-                    <p>🔴 <strong>Modo:</strong> <span id="mode-status">Libre</span></p>
-                    <p>⏰ <strong>Próximo desbloqueo:</strong> <span id="next-unlock">---</span></p>
+                <div class="status-card">
+                    <div class="status-item">
+                        <span class="status-icon">👤</span>
+                        <div>
+                            <span class="status-label">Jardinero</span>
+                            <span class="status-value" id="user-name-display">---</span>
+                        </div>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-icon" id="mode-icon">🟢</span>
+                        <div>
+                            <span class="status-label">Modo</span>
+                            <span class="status-value" id="mode-status">Libre</span>
+                        </div>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-icon">⏰</span>
+                        <div>
+                            <span class="status-label">Próximo desbloqueo</span>
+                            <span class="status-value" id="next-unlock">---</span>
+                        </div>
+                    </div>
                 </div>
                 <div id="selected-tree">
-                    <h4>🌲 Árbol seleccionado</h4>
-                    <div id="selected-display">Ninguno</div>
+                    <h4>🌲 Selección actual</h4>
+                    <div id="selected-display" class="selected-card">Ninguno</div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Elemento de audio para la alarma -->
+    <audio id="alarm-sound" preload="auto">
+        <source src="data:audio/wav;base64,U3RlYWx0aCBzb3VuZCBub3QgYXZhaWxhYmxl" type="audio/wav">
+    </audio>
 
     <script src="script.js"></script>
 </body>
