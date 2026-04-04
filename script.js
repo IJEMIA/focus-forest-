@@ -1,9 +1,6 @@
 // Configuración
 const TREES_COUNT = 15;
-const UNLOCK_DURATION = 1800; // 30 MINUTOS para plantar
-const GRID_SIZE = 4; // 4x4 píxeles por cuadro (10 veces más detallado que 40x40)
-const DEFAULT_COLOR = "#8b5a2b"; // Café
-const ALT_COLOR = "#2196f3"; // Azul
+const UNLOCK_DURATION = 1800; // 30 minutos para plantar
 
 let currentFocusTime = 0;
 let focusInterval = null;
@@ -16,185 +13,78 @@ let wasScreenLocked = false;
 let alarmInterval = null;
 let cheatModeActive = false;
 let cheatCodeEntered = "";
+let totalBlockedSeconds = 0; // Estadística de tiempo bloqueado
 const CHEAT_CODE = "409070110409070110409070110";
 
-// Variables para la cuadrícula
-let canvas = null;
-let ctx = null;
-let gridColors = []; // Matriz de colores para cada celda
-let canvasWidth = 0;
-let canvasHeight = 0;
-let cols = 0;
-let rows = 0;
-
-// Inicializar canvas
-function initGridCanvas() {
-    const gardenDiv = document.getElementById('garden');
-    if (!gardenDiv) return;
-    
-    // Crear canvas si no existe
-    if (!canvas) {
-        canvas = document.createElement('canvas');
-        canvas.className = 'garden-canvas';
-        canvas.style.width = '100%';
-        canvas.style.height = 'auto';
-        gardenDiv.innerHTML = '';
-        gardenDiv.appendChild(canvas);
-        
-        // Crear overlay para árboles
-        const treesOverlay = document.createElement('div');
-        treesOverlay.id = 'trees-overlay';
-        treesOverlay.style.position = 'relative';
-        treesOverlay.style.width = '100%';
-        gardenDiv.appendChild(treesOverlay);
-        
-        canvas.addEventListener('click', handleCanvasClick);
-    }
-    
-    resizeAndDrawGrid();
-    window.addEventListener('resize', () => resizeAndDrawGrid());
+// Calcular costo
+function getTreeCost(treeNumber) {
+    if (cheatModeActive) return 5 / 60;
+    if (treeNumber === 'test') return 1;
+    return treeNumber * 15;
 }
 
-function resizeAndDrawGrid() {
-    if (!canvas) return;
-    
-    const container = canvas.parentElement;
-    const containerWidth = container.clientWidth - 32;
-    canvasWidth = Math.max(containerWidth, 400);
-    canvasHeight = canvasWidth * 0.6; // Proporción 5:3
-    
-    canvas.width = canvasWidth;
-    canvas.height = canvasHeight;
-    canvas.style.width = `${canvasWidth}px`;
-    canvas.style.height = `${canvasHeight}px`;
-    
-    ctx = canvas.getContext('2d');
-    
-    cols = Math.floor(canvasWidth / GRID_SIZE);
-    rows = Math.floor(canvasHeight / GRID_SIZE);
-    
-    // Inicializar matriz de colores si está vacía
-    if (gridColors.length === 0) {
-        loadGridColors();
-        if (gridColors.length === 0) {
-            gridColors = Array(rows).fill().map(() => Array(cols).fill(DEFAULT_COLOR));
-        }
-    }
-    
-    drawGrid();
+function getTreeCostInSeconds(treeNumber) {
+    if (cheatModeActive) return 5;
+    if (treeNumber === 'test') return 60;
+    return treeNumber * 15 * 60;
 }
 
-function drawGrid() {
-    if (!ctx) return;
-    
-    for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < cols; col++) {
-            const x = col * GRID_SIZE;
-            const y = row * GRID_SIZE;
-            ctx.fillStyle = gridColors[row]?.[col] || DEFAULT_COLOR;
-            ctx.fillRect(x, y, GRID_SIZE, GRID_SIZE);
-            
-            // Dibujar líneas de la cuadrícula (más sutiles)
-            ctx.strokeStyle = 'rgba(0,0,0,0.1)';
-            ctx.strokeRect(x, y, GRID_SIZE, GRID_SIZE);
-        }
-    }
+function formatTime(minutes) {
+    if (cheatModeActive) return `5s (prueba)`;
+    if (minutes === 1) return '1 min';
+    if (minutes < 60) return `${minutes} min`;
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (mins === 0) return `${hours} hora${hours > 1 ? 's' : ''}`;
+    return `${hours}h ${mins}min`;
 }
 
-function handleCanvasClick(e) {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    
-    let clientX, clientY;
-    
-    if (e.touches) {
-        clientX = e.touches[0].clientX;
-        clientY = e.touches[0].clientY;
-        e.preventDefault();
-    } else {
-        clientX = e.clientX;
-        clientY = e.clientY;
-    }
-    
-    const canvasX = (clientX - rect.left) * scaleX;
-    const canvasY = (clientY - rect.top) * scaleY;
-    
-    if (canvasX >= 0 && canvasX < canvas.width && canvasY >= 0 && canvasY < canvas.height) {
-        const col = Math.floor(canvasX / GRID_SIZE);
-        const row = Math.floor(canvasY / GRID_SIZE);
-        
-        if (row >= 0 && row < rows && col >= 0 && col < cols) {
-            // Cambiar color del cuadro
-            const currentColor = gridColors[row][col];
-            gridColors[row][col] = currentColor === DEFAULT_COLOR ? ALT_COLOR : DEFAULT_COLOR;
-            saveGridColors();
-            drawGrid();
-            
-            // Mostrar feedback
-            const feedback = document.createElement('div');
-            feedback.textContent = currentColor === DEFAULT_COLOR ? '🔵' : '🟫';
-            feedback.style.cssText = `
-                position: fixed;
-                top: ${clientY - 20}px;
-                left: ${clientX - 10}px;
-                font-size: 20px;
-                opacity: 0.8;
-                pointer-events: none;
-                z-index: 10000;
-                animation: fadeOut 0.5s forwards;
-            `;
-            document.body.appendChild(feedback);
-            setTimeout(() => feedback.remove(), 500);
-        }
-    }
+function formatSeconds(seconds) {
+    const hours = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    if (hours > 0) return `${hours}h ${mins}min`;
+    if (mins > 0) return `${mins} min ${secs} s`;
+    return `${secs} segundos`;
 }
 
-function saveGridColors() {
-    localStorage.setItem('focusForestGrid', JSON.stringify({
-        gridColors: gridColors,
-        cols: cols,
-        rows: rows
+// Guardar datos
+function saveData() {
+    localStorage.setItem('focusForest', JSON.stringify({
+        userName: userName,
+        plantedTrees: plantedTrees.filter(t => !t.isTest),
+        cheatModeActive: cheatModeActive,
+        totalBlockedSeconds: totalBlockedSeconds
     }));
 }
 
-function loadGridColors() {
-    const saved = localStorage.getItem('focusForestGrid');
+// Cargar datos
+function loadSavedData() {
+    const saved = localStorage.getItem('focusForest');
     if (saved) {
         const data = JSON.parse(saved);
-        if (data.gridColors && data.rows === rows && data.cols === cols) {
-            gridColors = data.gridColors;
-        } else if (data.gridColors) {
-            // Reescalar si cambió el tamaño
-            gridColors = Array(rows).fill().map(() => Array(cols).fill(DEFAULT_COLOR));
-        }
+        if (data.userName) userName = data.userName;
+        if (data.cheatModeActive) cheatModeActive = data.cheatModeActive;
+        if (data.totalBlockedSeconds) totalBlockedSeconds = data.totalBlockedSeconds;
+        plantedTrees = data.plantedTrees || [];
+        renderGarden();
+        updateStats();
+        updateBlockedTimeStats();
     }
 }
 
-// Función para resetear la cuadrícula a café
-function resetGridToDefault() {
-    gridColors = Array(rows).fill().map(() => Array(cols).fill(DEFAULT_COLOR));
-    saveGridColors();
-    drawGrid();
-    
-    const msg = document.createElement('div');
-    msg.textContent = `🟫 Cuadrícula restablecida a color café`;
-    msg.style.cssText = `position:fixed; bottom:20px; left:20px; background:#4caf50; color:white; padding:10px 16px; border-radius:25px; z-index:9999; font-size:12px; animation: fadeOut 2s forwards;`;
-    document.body.appendChild(msg);
-    setTimeout(() => msg.remove(), 2000);
+// Actualizar estadística de tiempo bloqueado
+function updateBlockedTimeStats() {
+    const totalBlockedSpan = document.getElementById('total-blocked-time');
+    if (totalBlockedSpan) {
+        totalBlockedSpan.innerText = formatSeconds(totalBlockedSeconds);
+    }
 }
 
-// Función para cambiar toda la cuadrícula a azul
-function setGridToBlue() {
-    gridColors = Array(rows).fill().map(() => Array(cols).fill(ALT_COLOR));
-    saveGridColors();
-    drawGrid();
-    
-    const msg = document.createElement('div');
-    msg.textContent = `🔵 Cuadrícula cambiada a azul`;
-    msg.style.cssText = `position:fixed; bottom:20px; left:20px; background:#2196f3; color:white; padding:10px 16px; border-radius:25px; z-index:9999; font-size:12px; animation: fadeOut 2s forwards;`;
-    document.body.appendChild(msg);
-    setTimeout(() => msg.remove(), 2000);
+function addBlockedTime(seconds) {
+    totalBlockedSeconds += seconds;
+    updateBlockedTimeStats();
+    saveData();
 }
 
 // Verificar cheat code
@@ -222,53 +112,13 @@ function checkCheatCode(input) {
             nameInput.style.borderColor = "#ff9800";
             nameInput.style.boxShadow = "0 0 0 3px rgba(255,152,0,0.3)";
         }
+        saveData();
         return true;
     }
     return false;
 }
 
-function getTreeCost(treeNumber) {
-    if (cheatModeActive) return 5 / 60;
-    if (treeNumber === 'test') return 1;
-    return treeNumber * 15;
-}
-
-function getTreeCostInSeconds(treeNumber) {
-    if (cheatModeActive) return 5;
-    if (treeNumber === 'test') return 60;
-    return treeNumber * 15 * 60;
-}
-
-function formatTime(minutes) {
-    if (cheatModeActive) return `5 segundos (modo prueba)`;
-    if (minutes === 1) return '1 min';
-    if (minutes < 60) return `${minutes} min`;
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    if (mins === 0) return `${hours} hora${hours > 1 ? 's' : ''}`;
-    return `${hours}h ${mins}min`;
-}
-
-function saveData() {
-    localStorage.setItem('focusForest', JSON.stringify({
-        userName: userName,
-        plantedTrees: plantedTrees.filter(t => !t.isTest),
-        cheatModeActive: cheatModeActive
-    }));
-}
-
-function loadSavedData() {
-    const saved = localStorage.getItem('focusForest');
-    if (saved) {
-        const data = JSON.parse(saved);
-        if (data.userName) userName = data.userName;
-        if (data.cheatModeActive) cheatModeActive = data.cheatModeActive;
-        plantedTrees = data.plantedTrees || [];
-        renderGarden();
-        updateStats();
-    }
-}
-
+// Alarma
 function playAlarmTenTimes() {
     let count = 0;
     function beep() {
@@ -326,6 +176,7 @@ function showSuccessPopup() {
     setTimeout(() => { if (popup.parentNode) popup.remove(); }, 10000);
 }
 
+// Árbol de prueba
 function plantTestTree(x, y) {
     const testTree = {
         id: Date.now(),
@@ -351,15 +202,25 @@ function plantTestTree(x, y) {
     }, 30 * 60 * 1000);
 }
 
+// Reiniciar contador
 function resetCounter(reason) {
     if (!isBlocked) return;
     if (focusInterval) clearInterval(focusInterval);
     if (alarmInterval) clearInterval(alarmInterval);
+    
+    // Guardar tiempo completado si había progreso
+    const totalSeconds = (selectedTreeIndex === 'test' ? (cheatModeActive ? 5 : 60) : getTreeCostInSeconds(selectedTreeIndex));
+    const completedSeconds = totalSeconds - currentFocusTime;
+    if (completedSeconds > 0) {
+        addBlockedTime(completedSeconds);
+    }
+    
     isBlocked = false;
     isPlantingMode = false;
     currentFocusTime = 0;
     document.getElementById('blocker').classList.remove('active');
     document.getElementById('mode-status').innerText = 'Libre';
+    
     const msg = document.createElement('div');
     msg.textContent = `⚠️ ${reason} - Contador reiniciado`;
     msg.style.cssText = `position:fixed; bottom:20px; left:20px; background:#f44336; color:white; padding:12px 18px; border-radius:30px; z-index:9999; font-size:13px; animation: fadeOut 3s forwards;`;
@@ -367,105 +228,193 @@ function resetCounter(reason) {
     setTimeout(() => msg.remove(), 3000);
 }
 
+// Detectar cambios
 function setupDetection() {
     document.addEventListener('visibilitychange', () => {
-        if (document.hidden && isBlocked && !isPlantingMode) wasScreenLocked = true;
-        else if (!document.hidden && wasScreenLocked && isBlocked && !isPlantingMode) wasScreenLocked = false;
+        if (document.hidden && isBlocked && !isPlantingMode) {
+            wasScreenLocked = true;
+        } else if (!document.hidden && wasScreenLocked && isBlocked && !isPlantingMode) {
+            wasScreenLocked = false;
+        }
     });
+    
     let lostFocusTime = 0;
-    window.addEventListener('blur', () => { if (isBlocked && !isPlantingMode) lostFocusTime = Date.now(); });
+    window.addEventListener('blur', () => { 
+        if (isBlocked && !isPlantingMode) lostFocusTime = Date.now(); 
+    });
     window.addEventListener('focus', () => {
         if (isBlocked && !isPlantingMode && lostFocusTime > 0) {
             const timeAway = Date.now() - lostFocusTime;
-            if (timeAway > 2000) resetCounter('Cambiaste de aplicación');
+            if (timeAway > 2000) {
+                resetCounter('Cambiaste de aplicación');
+            }
             lostFocusTime = 0;
         }
     });
 }
 
+// Iniciar app
 function startApp() {
     userName = document.getElementById('user-name').value.trim();
-    if (userName === "") { alert("Ingresa tu nombre"); return; }
+    if (userName === "") { 
+        alert("Ingresa tu nombre"); 
+        return; 
+    }
+    
     saveData();
     document.getElementById('user-name-display').innerText = userName;
+    
     if (cheatModeActive) {
         document.getElementById('garden-title').innerHTML = `🌱 Jardín de ${userName} 🎮`;
-        document.getElementById('mode-status').innerHTML = '🔴 MODO PRUEBA';
     } else {
         document.getElementById('garden-title').innerHTML = `🌱 Jardín de ${userName}`;
     }
+    
     document.getElementById('welcome-screen').style.display = 'none';
     document.getElementById('main-app').style.display = 'block';
+    
     generateTreeMenu();
-    initGridCanvas();
     renderGarden();
     updateStats();
+    updateBlockedTimeStats();
     selectTree(1);
 }
 
+// Generar menú
 function generateTreeMenu() {
     const treeList = document.getElementById('tree-list');
     if (!treeList) return;
     treeList.innerHTML = '';
+    
     const testDiv = document.createElement('div');
     testDiv.className = `tree-item ${selectedTreeIndex === 'test' ? 'selected' : ''}`;
     testDiv.onclick = () => selectTree('test');
-    testDiv.innerHTML = `<div style="width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-size:28px;">🌲</div><div class="tree-info"><div class="tree-name">🌲 Árbol de Prueba</div><div class="tree-cost">💰 ${cheatModeActive ? '5 segundos (prueba)' : '1 min'}</div></div>`;
+    testDiv.innerHTML = `
+        <div style="width:40px; height:40px; display:flex; align-items:center; justify-content:center; font-size:32px;">🌲</div>
+        <div class="tree-info">
+            <div class="tree-name">🌲 Árbol de Prueba</div>
+            <div class="tree-cost">💰 ${cheatModeActive ? '5s (prueba)' : '1 min'}</div>
+        </div>
+    `;
     treeList.appendChild(testDiv);
+    
     for (let i = 1; i <= TREES_COUNT; i++) {
         const cost = getTreeCost(i);
         const div = document.createElement('div');
         div.className = `tree-item ${selectedTreeIndex === i ? 'selected' : ''}`;
         div.onclick = () => selectTree(i);
-        div.innerHTML = `<img src="trees/${i}.png" onerror="this.style.display='none'"><div class="tree-info"><div class="tree-name">Árbol #${i}</div><div class="tree-cost">💰 ${formatTime(cost)}</div></div>`;
+        div.innerHTML = `
+            <img src="trees/${i}.png" onerror="this.style.display='none'">
+            <div class="tree-info">
+                <div class="tree-name">Árbol #${i}</div>
+                <div class="tree-cost">💰 ${formatTime(cost)}</div>
+            </div>
+        `;
         treeList.appendChild(div);
     }
 }
 
+// Seleccionar árbol
 function selectTree(treeNumber) {
     selectedTreeIndex = treeNumber;
     generateTreeMenu();
     const selectedDisplay = document.getElementById('selected-display');
     if (!selectedDisplay) return;
+    
     if (treeNumber === 'test') {
-        selectedDisplay.innerHTML = `<div style="font-size:44px; margin:8px auto;">🌲</div><p><strong>Árbol de Prueba</strong></p><p style="color:#ff6f00;">💰 ${cheatModeActive ? '5 segundos (modo prueba)' : '1 minuto'}</p><button id="start-tree-btn" class="btn-primary" style="margin-top:16px; width:100%; padding:12px;">🌱 Comenzar</button>`;
+        selectedDisplay.innerHTML = `
+            <div style="font-size:48px; margin:8px auto;">🌲</div>
+            <p><strong>Árbol de Prueba</strong></p>
+            <p style="color:#ff6f00;">💰 ${cheatModeActive ? '5 segundos (modo prueba)' : '1 minuto'}</p>
+            <button id="start-tree-btn" class="btn-primary" style="margin-top:16px; width:100%; padding:12px;">🌱 Comenzar</button>
+        `;
     } else {
         const cost = getTreeCost(treeNumber);
-        selectedDisplay.innerHTML = `<img src="trees/${treeNumber}.png" style="width:55px; margin:8px auto;" onerror="this.style.display='none'"><p><strong>Árbol #${treeNumber}</strong></p><p style="color:#ff6f00;">💰 ${formatTime(cost)}</p><button id="start-tree-btn" class="btn-primary" style="margin-top:16px; width:100%; padding:12px;">🌱 Comenzar</button>`;
+        selectedDisplay.innerHTML = `
+            <img src="trees/${treeNumber}.png" style="width:60px; margin:8px auto;" onerror="this.style.display='none'">
+            <p><strong>Árbol #${treeNumber}</strong></p>
+            <p style="color:#ff6f00;">💰 ${formatTime(cost)}</p>
+            <button id="start-tree-btn" class="btn-primary" style="margin-top:16px; width:100%; padding:12px;">🌱 Comenzar</button>
+        `;
     }
+    
     const startBtn = document.getElementById('start-tree-btn');
-    if (startBtn) startBtn.onclick = () => startFocus();
+    if (startBtn) {
+        startBtn.onclick = () => startFocus();
+    }
 }
 
+// Iniciar enfoque
 function startFocus() {
-    if (isBlocked) { alert(`🔒 ${userName}, ya estás en modo enfoque`); return; }
+    if (isBlocked) { 
+        alert(`🔒 ${userName}, ya estás en modo enfoque`); 
+        return; 
+    }
     if (focusInterval) clearInterval(focusInterval);
+    
     let focusSeconds = selectedTreeIndex === 'test' ? (cheatModeActive ? 5 : 60) : getTreeCostInSeconds(selectedTreeIndex);
     currentFocusTime = focusSeconds;
     isBlocked = true;
     isPlantingMode = false;
+    
     document.getElementById('blocker').classList.add('active');
     document.getElementById('mode-status').innerText = cheatModeActive ? '🔴 PRUEBA' : '🔴 ENFOQUE';
+    
     if (cheatModeActive) {
         document.getElementById('next-unlock').innerText = `5 segundos`;
         document.getElementById('blocker-message').innerHTML = `${userName}, MODO PRUEBA - ${focusSeconds} segundos 🎮`;
     } else {
         const focusMinutes = focusSeconds / 60;
         document.getElementById('next-unlock').innerText = formatTime(focusMinutes);
-        document.getElementById('blocker-message').innerHTML = selectedTreeIndex === 'test' ? `${userName}, cultivando Árbol de Prueba 🌲` : `${userName}, cultivando Árbol #${selectedTreeIndex}`;
+        document.getElementById('blocker-message').innerHTML = selectedTreeIndex === 'test' ? 
+            `${userName}, cultivando Árbol de Prueba 🌲` : 
+            `${userName}, cultivando Árbol #${selectedTreeIndex}`;
     }
+    
     updateTimerDisplay();
+    
     focusInterval = setInterval(() => {
-        if (currentFocusTime <= 0) { clearInterval(focusInterval); unlockToPlant(); }
-        else { currentFocusTime--; updateTimerDisplay(); }
+        if (currentFocusTime <= 0) { 
+            clearInterval(focusInterval); 
+            unlockToPlant(); 
+        } else { 
+            currentFocusTime--; 
+            updateTimerDisplay(); 
+        }
     }, 1000);
 }
 
+// Actualizar timer
 function updateTimerDisplay() {
     const seconds = currentFocusTime;
     const minutes = Math.floor(seconds / 60);
     const secs = seconds % 60;
     const timerElement = document.getElementById('timer');
     if (timerElement) {
-        if (cheatModeActive || seconds < 60) timerElement.innerText = `${seconds.toString().padStart(2, '0')}s`;
-        else
+        if (cheatModeActive || seconds < 60) {
+            timerElement.innerText = `${seconds}s`;
+        } else {
+            timerElement.innerText = `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+    }
+    
+    let totalSeconds = selectedTreeIndex === 'test' ? (cheatModeActive ? 5 : 60) : getTreeCostInSeconds(selectedTreeIndex);
+    const progress = ((totalSeconds - currentFocusTime) / totalSeconds) * 100;
+    const fillElement = document.getElementById('progress-fill');
+    if (fillElement) {
+        fillElement.style.width = `${Math.min(100, Math.max(0, progress))}%`;
+    }
+    const percentageElement = document.getElementById('progress-percentage');
+    if (percentageElement) {
+        percentageElement.innerText = `${Math.round(progress)}%`;
+    }
+}
+
+// Desbloquear para plantar
+function unlockToPlant() {
+    if (!isBlocked) return;
+    clearInterval(focusInterval);
+    
+    // Guardar el tiempo completado
+    const totalSeconds = selectedTreeIndex === 'test' ? (cheatModeActive ? 5 : 60) : getTreeCostInSeconds(selectedTreeIndex);
+    addBlockedTime
