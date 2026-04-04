@@ -1,9 +1,9 @@
 // Configuración
-const UNLOCK_DURATION = 1800; // 30 minutos para añadir después del enfoque
-const CELL_SIZE = 20; // Tamaño de cada celda de la cuadrícula
-const ANIMAL_MOVE_INTERVAL = 3000; // Animales se mueven cada 3 segundos
+const UNLOCK_DURATION = 1800;
+const CELL_SIZE = 20;
+const ANIMAL_MOVE_INTERVAL = 3000;
 
-// Árboles (15 tipos con diferentes rarezas)
+// Árboles
 const TREES = [
     { id: 1, name: "🌲 Pino", rarity: "Común", cost: 5, emoji: "🌲", type: "tree" },
     { id: 2, name: "🌳 Roble", rarity: "Común", cost: 10, emoji: "🌳", type: "tree" },
@@ -22,7 +22,7 @@ const TREES = [
     { id: 15, name: "👑 Árbol Real", rarity: "Legendario", cost: 250, emoji: "👑", type: "tree" }
 ];
 
-// Animales (10 tipos con diferentes rarezas)
+// Animales
 const ANIMALS = [
     { id: 1, name: "🐕 Perro", rarity: "Común", cost: 8, emoji: "🐕", type: "animal" },
     { id: 2, name: "🐈 Gato", rarity: "Común", cost: 8, emoji: "🐈", type: "animal" },
@@ -36,7 +36,6 @@ const ANIMALS = [
     { id: 10, name: "🦄 Unicornio", rarity: "Legendario", cost: 150, emoji: "🦄", type: "animal" }
 ];
 
-// Variables de estado
 let currentFocusTime = 0;
 let focusInterval = null;
 let isBlocked = false;
@@ -53,7 +52,6 @@ let totalBlockedSeconds = 0;
 let coloringModeActive = false;
 let animalMoveInterval = null;
 
-// Variables del canvas
 let canvas = null;
 let ctx = null;
 let canvasWidth = 0;
@@ -74,7 +72,6 @@ document.addEventListener('DOMContentLoaded', function() {
     setupCheatCodeDetection();
     setupGridControls();
     
-    // Botones principales
     document.getElementById('start-btn').onclick = () => startApp();
     document.getElementById('clear-garden').onclick = clearGarden;
     document.getElementById('reset-all-colors').onclick = resetAllColors;
@@ -88,7 +85,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// ============ FUNCIONES DE INTERFAZ ============
 function switchTab(tab) {
     selectedType = tab;
     const treesTab = document.getElementById('tab-trees');
@@ -133,7 +129,7 @@ function toggleColoringMode() {
     }
 }
 
-// ============ FUNCIONES DEL CANVAS Y CUADRÍCULA ============
+// ============ CANVAS ============
 function initCanvas() {
     canvas = document.getElementById('garden-canvas');
     if (!canvas) return;
@@ -153,8 +149,9 @@ function initCanvas() {
 }
 
 function resizeCanvas() {
-    const container = canvas.parentElement;
-    const containerWidth = container.clientWidth - 32;
+    const area = document.getElementById('garden-area');
+    if (!area) return;
+    const containerWidth = area.clientWidth - 4;
     canvasWidth = Math.max(containerWidth, 400);
     canvasHeight = canvasWidth * 0.6;
     canvas.width = canvasWidth;
@@ -195,12 +192,10 @@ function handleCanvasClickAt(x, y) {
     const row = Math.floor(y / CELL_SIZE);
     if (row >= 0 && row < rows && col >= 0 && col < cols) {
         if (coloringModeActive) {
-            // Modo coloreo: cambiar color del cuadro
             gridColors[row][col] = brushColor;
             drawGrid();
             saveGridColors();
         } else {
-            // Modo normal: añadir entidad si está en modo plantación
             if (isPlantingMode && !isBlocked) {
                 placeEntity(x, y);
             } else if (!isPlantingMode && !isBlocked) {
@@ -249,11 +244,11 @@ function setupGridControls() {
     }
 }
 
-// ============ FUNCIONES DE UTILIDAD ============
+// ============ UTILIDADES ============
 function showMessage(text, bgColor = "#4caf50", duration = 2000) {
     const msg = document.createElement('div');
     msg.textContent = text;
-    msg.style.cssText = `position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:${bgColor}; color:white; padding:10px 20px; border-radius:30px; z-index:9999; font-size:13px; animation:fadeOut ${duration/1000}s forwards; text-align:center; white-space:nowrap;`;
+    msg.style.cssText = `position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:${bgColor}; color:white; padding:10px 20px; border-radius:30px; z-index:9999; font-size:13px; animation:fadeOut ${duration/1000}s forwards; white-space:nowrap;`;
     document.body.appendChild(msg);
     setTimeout(() => msg.remove(), duration);
 }
@@ -345,7 +340,7 @@ function setupCheatCodeDetection() {
     }
 }
 
-// ============ ALARMA Y POPUP ============
+// ============ ALARMA ============
 function playAlarmTenTimes() {
     let count = 0;
     function beep() {
@@ -361,7 +356,7 @@ function playAlarmTenTimes() {
             gain.gain.exponentialRampToValueAtTime(0.00001, context.currentTime + 1);
             oscillator.stop(context.currentTime + 1);
             setTimeout(() => context.close(), 1500);
-        } catch(e) { console.log("Audio no soportado"); }
+        } catch(e) {}
     }
     if (alarmInterval) clearInterval(alarmInterval);
     beep();
@@ -381,7 +376,7 @@ function showSuccessPopup() {
     setTimeout(() => popup.remove(), 10000);
 }
 
-// ============ DETECCIÓN DE BLOQUEO (NO PENALIZA) ============
+// ============ DETECCIÓN (NO PENALIZA BLOQUEO) ============
 function setupDetection() {
     let visibilityStart = 0;
     let wasHidden = false;
@@ -390,10 +385,8 @@ function setupDetection() {
         if (document.hidden) {
             visibilityStart = Date.now();
             wasHidden = true;
-            // No detenemos el contador, solo registramos el tiempo
         } else if (wasHidden && isBlocked && !isPlantingMode) {
             const hiddenTime = Date.now() - visibilityStart;
-            // Solo penalizamos si estuvo oculto más de 3 segundos (cambio de app)
             if (hiddenTime > 3000) {
                 resetCounter('Cambiaste de aplicación/pestaña');
             }
@@ -414,7 +407,7 @@ function resetCounter(reason) {
     showMessage(`⚠️ ${reason} - Contador reiniciado`, "#f44336", 3000);
 }
 
-// ============ INICIAR APLICACIÓN ============
+// ============ INICIAR APP ============
 function startApp() {
     userName = document.getElementById('user-name').value.trim();
     if (userName === "") { alert("Ingresa tu nombre"); return; }
@@ -430,9 +423,10 @@ function startApp() {
     updateBlockedTimeStats();
     selectEntity(0, 'tree');
     startAnimalMovement();
+    setTimeout(() => resizeCanvas(), 100);
 }
 
-// ============ GENERAR MENÚS ============
+// ============ MENÚS ============
 function generateTreeMenu() {
     const container = document.getElementById('tree-list');
     if (!container) return;
@@ -488,12 +482,7 @@ function updateSelectedDisplay() {
     const selectedDisplay = document.getElementById('selected-display');
     if (!selectedDisplay) return;
     
-    let entity;
-    if (selectedType === 'tree') {
-        entity = TREES[selectedEntityIndex];
-    } else {
-        entity = ANIMALS[selectedEntityIndex];
-    }
+    let entity = selectedType === 'tree' ? TREES[selectedEntityIndex] : ANIMALS[selectedEntityIndex];
     const cost = getEntityCost(entity);
     selectedDisplay.innerHTML = `
         <div class="item-emoji" style="font-size:40px;">${entity.emoji}</div>
@@ -506,7 +495,7 @@ function updateSelectedDisplay() {
     if (startBtn) startBtn.onclick = () => startFocus();
 }
 
-// ============ SISTEMA DE ENFOQUE ============
+// ============ ENFOQUE ============
 function startFocus() {
     if (isBlocked) { alert(`🔒 ${userName}, ya estás en modo enfoque`); return; }
     if (focusInterval) clearInterval(focusInterval);
@@ -634,25 +623,23 @@ function placeEntity(x, y) {
     showMessage(`✅ ¡${entity.name} ${entity.emoji} añadido, ${userName}!`, "#4caf50", 2500);
 }
 
-// ============ MOVIMIENTO DE ANIMALES ============
+// ============ MOVIMIENTO ANIMALES ============
 function startAnimalMovement() {
     if (animalMoveInterval) clearInterval(animalMoveInterval);
     animalMoveInterval = setInterval(() => {
         if (spawnedAnimals.length > 0 && canvasWidth > 0 && canvasHeight > 0) {
-            let moved = false;
             spawnedAnimals.forEach(animal => {
                 const newX = Math.max(20, Math.min(canvasWidth - 20, animal.x + (Math.random() - 0.5) * 60));
                 const newY = Math.max(20, Math.min(canvasHeight - 20, animal.y + (Math.random() - 0.5) * 60));
                 animal.x = newX;
                 animal.y = newY;
-                moved = true;
             });
-            if (moved) renderEntities();
+            renderEntities();
         }
     }, ANIMAL_MOVE_INTERVAL);
 }
 
-// ============ RENDERIZADO DE ENTIDADES ============
+// ============ RENDERIZADO ============
 function renderEntities() {
     const overlay = document.getElementById('entities-overlay');
     if (!overlay) return;
@@ -662,8 +649,8 @@ function renderEntities() {
     allEntities.forEach((entity, idx) => {
         const entityDiv = document.createElement('div');
         entityDiv.className = 'entity';
-        const posX = entity.x || (idx * 45 % (canvasWidth || 800));
-        const posY = entity.y || (Math.floor(idx / 18) * 45 + 30);
+        const posX = entity.x || (idx * 45 % (canvasWidth || 800) + 30);
+        const posY = entity.y || (Math.floor(idx / 18) * 45 + 40);
         entityDiv.style.left = `${posX}px`;
         entityDiv.style.top = `${posY}px`;
         entityDiv.innerHTML = `${entity.emoji}<div class="entity-tooltip">${entity.name} | ${formatTime(entity.cost)}</div>`;
