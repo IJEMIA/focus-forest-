@@ -102,10 +102,6 @@ body {
     cursor: pointer;
 }
 
-.welcome-card button:hover {
-    background: #45a049;
-}
-
 /* Overlay de bloqueo */
 #blocker {
     position: fixed;
@@ -248,7 +244,6 @@ body {
 
 .tree-item:active {
     transform: scale(0.98);
-    background: #e8f5e9;
 }
 
 .tree-item.selected {
@@ -333,7 +328,6 @@ body {
 @media (min-width: 768px) {
     .garden {
         min-height: 500px;
-        background-size: 20px 20px;
     }
 }
 
@@ -472,17 +466,9 @@ button:active {
     color: white;
 }
 
-.btn-primary:hover {
-    background: #45a049;
-}
-
 .btn-danger {
     background: #ff3b30;
     color: white;
-}
-
-.btn-danger:hover {
-    background: #e6352b;
 }
 
 /* Animaciones */
