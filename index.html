@@ -1,1 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Focus Forest - Jardín con bloqueo de celular</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Pantalla de bienvenida para preguntar nombre -->
+    <div id="welcome-screen">
+        <div class="welcome-card">
+            <h1>🌳 Focus Forest 🌳</h1>
+            <p>Bienvenido a tu jardín de enfoque</p>
+            <input type="text" id="user-name" placeholder="Escribe tu nombre" maxlength="30" autocomplete="off">
+            <button id="start-btn" class="btn-primary">🌱 Comenzar mi jardín 🌱</button>
+        </div>
+    </div>
 
+    <!-- Overlay de bloqueo del celular -->
+    <div id="blocker">
+        <div class="blocker-content">
+            <h1>🔒 Modo Enfoque Activado</h1>
+            <p id="blocker-message">Estás cultivando tu concentración</p>
+            <div class="timer-display">
+                <span id="timer">00:00</span>
+            </div>
+            <div class="progress-bar">
+                <div id="progress-fill"></div>
+            </div>
+            <p class="hint">✨ Cuando termine, tendrás 30 segundos para plantar ✨</p>
+        </div>
+    </div>
+
+    <!-- Interfaz principal (oculta hasta que ponga nombre) -->
+    <div id="main-app" style="display: none;">
+        <div class="container">
+            <!-- Panel izquierdo: Menú de árboles -->
+            <div class="tree-menu">
+                <h2>🌳 Tienda de Árboles</h2>
+                <div id="tree-list" class="tree-list"></div>
+            </div>
+
+            <!-- Panel central: Jardín -->
+            <div class="garden-container">
+                <div class="garden-header">
+                    <h3 id="garden-title">🌱 Mi Jardín</h3>
+                    <div class="stats">
+                        <span>🌲 Árboles: <span id="tree-count">0</span></span>
+                        <span>⏱️ Tiempo total: <span id="total-time">0</span> min</span>
+                    </div>
+                </div>
+                <div id="garden" class="garden"></div>
+                <div class="garden-controls">
+                    <button id="clear-garden" class="btn-danger">🗑️ Limpiar Jardín</button>
+                </div>
+            </div>
+
+            <!-- Panel derecho: Estado actual -->
+            <div class="status-panel">
+                <h3>📊 Estado</h3>
+                <div id="focus-status">
+                    <p>👤 <strong>Jardinero:</strong> <span id="user-name-display">---</span></p>
+                    <p>🔴 <strong>Modo:</strong> <span id="mode-status">Libre</span></p>
+                    <p>⏰ <strong>Próximo desbloqueo:</strong> <span id="next-unlock">---</span></p>
+                </div>
+                <div id="selected-tree">
+                    <h4>🌲 Árbol seleccionado</h4>
+                    <div id="selected-display">Ninguno</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
