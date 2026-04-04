@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Focus Forest - Jardín con bloqueo de celular</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -17,10 +17,11 @@
         </div>
     </div>
 
-    <!-- Overlay de bloqueo del celular -->
+    <!-- Overlay de bloqueo del celular - PANTALLA COMPLETA SIN SALIDA -->
     <div id="blocker">
         <div class="blocker-content">
-            <h1>🔒 Modo Enfoque Activado</h1>
+            <div class="lock-icon">🔒</div>
+            <h1>MODO ENFOQUE</h1>
             <p id="blocker-message">Estás cultivando tu concentración</p>
             <div class="timer-display">
                 <span id="timer">00:00</span>
@@ -28,7 +29,10 @@
             <div class="progress-bar">
                 <div id="progress-fill"></div>
             </div>
-            <p class="hint">✨ Cuando termine, tendrás 30 segundos para plantar ✨</p>
+            <div class="blocker-footer">
+                <p>⚠️ NO cierres ni cambies de aplicación ⚠️</p>
+                <p class="small-text">El contador se reiniciará si lo haces</p>
+            </div>
         </div>
     </div>
 
