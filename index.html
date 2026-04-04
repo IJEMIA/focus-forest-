@@ -14,7 +14,7 @@
             <h1>Focus Forest</h1>
             <p>Bienvenido a tu jardín de enfoque</p>
             <input type="text" id="user-name" placeholder="Tu nombre" maxlength="30" autocomplete="off">
-            <button id="start-btn" class="btn-primary">🌱 Comenzar 🌱</button>
+            <button id="start-btn" class="btn-primary">🌱 Comenzar mi jardín 🌱</button>
         </div>
     </div>
 
@@ -27,13 +27,11 @@
             <div class="timer-display">
                 <span id="timer">00:00</span>
             </div>
-            <div class="progress-ring">
-                <svg width="200" height="200" viewBox="0 0 200 200">
-                    <circle cx="100" cy="100" r="90" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="8"/>
-                    <circle id="progress-ring-circle" cx="100" cy="100" r="90" fill="none" stroke="#4caf50" stroke-width="8" stroke-linecap="round" 
-                            stroke-dasharray="565.48" stroke-dashoffset="565.48" transform="rotate(-90 100 100)"/>
-                </svg>
-                <div class="progress-percentage" id="progress-percentage">0%</div>
+            <div class="progress-bar-container">
+                <div class="progress-bar">
+                    <div id="progress-fill"></div>
+                </div>
+                <div id="progress-percentage">0%</div>
             </div>
             <div class="blocker-footer">
                 <p>⚠️ No cierres ni cambies de aplicación</p>
@@ -49,7 +47,7 @@
             <div class="tree-menu glass">
                 <div class="menu-header">
                     <h2>🌳 Tienda</h2>
-                    <span class="badge">15 árboles</span>
+                    <span class="badge">Árboles</span>
                 </div>
                 <div id="tree-list" class="tree-list"></div>
             </div>
@@ -87,7 +85,7 @@
                         </div>
                     </div>
                     <div class="status-item">
-                        <span class="status-icon" id="mode-icon">🟢</span>
+                        <span class="status-icon">🟢</span>
                         <div>
                             <span class="status-label">Modo</span>
                             <span class="status-value" id="mode-status">Libre</span>
@@ -96,7 +94,7 @@
                     <div class="status-item">
                         <span class="status-icon">⏰</span>
                         <div>
-                            <span class="status-label">Próximo desbloqueo</span>
+                            <span class="status-label">Estado</span>
                             <span class="status-value" id="next-unlock">---</span>
                         </div>
                     </div>
