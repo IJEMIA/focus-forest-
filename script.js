@@ -1,6 +1,6 @@
 // Configuración
-const TREES_COUNT = 15; // 1 a 15
-const UNLOCK_DURATION = 30; // 30 segundos para plantar
+const TREES_COUNT = 15;
+const UNLOCK_DURATION = 300; // 5 MINUTOS = 300 segundos para plantar
 let currentFocusTime = 0;
 let focusInterval = null;
 let isBlocked = false;
@@ -10,12 +10,48 @@ let userName = "";
 let isPlantingMode = false;
 let violationCount = 0;
 
-// Calcular costo: árbol 1 = 15min, 2 = 30min, 3 = 45min... 15 = 225min
+// Elemento de audio para la alarma
+let alarmAudio = null;
+
+// Inicializar audio
+function initAudio() {
+    try {
+        // Crear un beep simple con Web Audio API
+        alarmAudio = new (window.AudioContext || window.webkitAudioContext)();
+    } catch(e) {
+        console.log("Audio no soportado");
+    }
+}
+
+// Reproducir alarma
+function playAlarm() {
+    try {
+        if (alarmAudio) {
+            const oscillator = alarmAudio.createOscillator();
+            const gainNode = alarmAudio.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(alarmAudio.destination);
+            oscillator.frequency.value = 880;
+            gainNode.gain.value = 0.3;
+            oscillator.start();
+            gainNode.gain.exponentialRampToValueAtTime(0.00001, alarmAudio.currentTime + 2);
+            oscillator.stop(alarmAudio.currentTime + 2);
+        } else {
+            // Fallback: usar sonido del sistema
+            const beep = new Audio('data:audio/wav;base64,U3RlYWx0aCBzb3VuZCBub3QgYXZhaWxhYmxl');
+            beep.play().catch(e => console.log('Audio no disponible'));
+        }
+    } catch(e) {
+        console.log("Error reproduciendo alarma");
+    }
+}
+
+// Calcular costo
 function getTreeCost(treeNumber) {
     return treeNumber * 15;
 }
 
-// Formatear minutos a horas y minutos
+// Formatear tiempo
 function formatTime(minutes) {
     if (minutes < 60) return `${minutes} min`;
     const hours = Math.floor(minutes / 60);
@@ -32,7 +68,6 @@ function saveData() {
     }));
 }
 
-// Cargar datos guardados
 function loadSavedData() {
     const saved = localStorage.getItem('focusForest');
     if (saved) {
@@ -47,7 +82,7 @@ function loadSavedData() {
     }
 }
 
-// REINICIAR CONTADOR (solo si está activo)
+// Reiniciar contador
 function resetCounter(reason) {
     if (!isBlocked) return;
     
@@ -67,26 +102,27 @@ function resetCounter(reason) {
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        background: #f44336;
+        background: rgba(0,0,0,0.9);
+        backdrop-filter: blur(20px);
         color: white;
-        padding: 20px;
-        border-radius: 10px;
+        padding: 24px;
+        border-radius: 32px;
         z-index: 20002;
         text-align: center;
-        box-shadow: 0 5px 30px rgba(0,0,0,0.5);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.4);
         animation: shake 0.5s ease;
-        min-width: 300px;
+        min-width: 320px;
+        border: 1px solid rgba(255,255,255,0.2);
     `;
     violationMsg.innerHTML = `
-        <h2>⚠️ INFACCIÓN ⚠️</h2>
+        <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
+        <h2 style="margin-bottom: 12px;">Infracción</h2>
         <p>${reason}</p>
-        <p>Llevabas ${formatTime(elapsedMinutes)} de enfoque</p>
-        <p>❌ El contador se ha REINICIADO ❌</p>
-        <p>Infracción #${violationCount}</p>
-        <small>Vuelve a comenzar la cuenta regresiva</small>
+        <p style="color: #ff9800; margin: 12px 0;">Llevabas ${formatTime(elapsedMinutes)} de enfoque</p>
+        <p style="color: #f44336;">❌ El contador se ha reiniciado</p>
+        <p style="margin-top: 12px; font-size: 14px;">Infracción #${violationCount}</p>
     `;
     document.body.appendChild(violationMsg);
-    
     setTimeout(() => violationMsg.remove(), 4000);
     
     isBlocked = false;
@@ -94,62 +130,35 @@ function resetCounter(reason) {
     currentFocusTime = 0;
     
     document.getElementById('blocker').classList.remove('active');
-    document.getElementById('mode-status').innerText = 'Reiniciado por infracción';
+    document.getElementById('mode-status').innerText = 'Reiniciado';
     document.getElementById('next-unlock').innerText = 'Vuelve a empezar';
 }
 
-// Detectar cambios SOLO cuando el contador está activo
+// Detección estricta
 function setupStrictDetection() {
     document.addEventListener('visibilitychange', () => {
-        if (document.hidden && isBlocked) {
-            resetCounter('📱 Cambiaste de pestaña o aplicación');
-        }
+        if (document.hidden && isBlocked) resetCounter('📱 Cambiaste de pestaña');
     });
-    
     window.addEventListener('blur', () => {
-        if (isBlocked) {
-            resetCounter('🪟 Saliste de la ventana del navegador');
-        }
+        if (isBlocked) resetCounter('🪟 Saliste de la ventana');
     });
-    
     document.addEventListener('keydown', (e) => {
         if (isBlocked) {
-            if (e.key === 'F5' || e.key === 'F12' || 
-                (e.ctrlKey && e.key === 'r') ||
-                (e.ctrlKey && e.key === 'R')) {
-                e.preventDefault();
-            }
-            resetCounter(`⌨️ Presionaste la tecla: ${e.key}`);
+            e.preventDefault();
+            resetCounter(`⌨️ Tecla presionada: ${e.key}`);
         }
     });
-    
     window.addEventListener('scroll', () => {
-        if (isBlocked) {
-            resetCounter('📜 Intentaste hacer scroll');
-        }
+        if (isBlocked) resetCounter('📜 Scroll detectado');
     });
-    
     document.addEventListener('contextmenu', (e) => {
         if (isBlocked) {
             e.preventDefault();
-            resetCounter('🛠️ Intentaste abrir menú contextual');
-        }
-    });
-    
-    document.addEventListener('keydown', (e) => {
-        if (isBlocked) {
-            if (e.key === 'F12' || 
-                (e.ctrlKey && e.shiftKey && e.key === 'I') ||
-                (e.ctrlKey && e.key === 'u') ||
-                (e.ctrlKey && e.key === 'U')) {
-                e.preventDefault();
-                resetCounter('🔧 Intentaste abrir herramientas de desarrollador');
-            }
+            resetCounter('🛠️ Menú contextual');
         }
     });
 }
 
-// Iniciar aplicación después del nombre
 function startApp() {
     userName = document.getElementById('user-name').value.trim();
     if (userName === "") {
@@ -158,10 +167,8 @@ function startApp() {
     }
     
     saveData();
-    
     document.getElementById('user-name-display').innerText = userName;
-    document.getElementById('garden-title').innerHTML = `🌱 Jardín de ${userName} 🌱`;
-    
+    document.getElementById('garden-title').innerHTML = `🌱 Jardín de ${userName}`;
     document.getElementById('welcome-screen').style.display = 'none';
     document.getElementById('main-app').style.display = 'block';
     
@@ -171,7 +178,6 @@ function startApp() {
     selectTree(1);
 }
 
-// Generar menú de árboles
 function generateTreeMenu() {
     const treeList = document.getElementById('tree-list');
     treeList.innerHTML = '';
@@ -183,9 +189,9 @@ function generateTreeMenu() {
         div.onclick = () => selectTree(i);
         
         div.innerHTML = `
-            <img src="trees/${i}.png" alt="Árbol ${i}" onerror="this.src='https://via.placeholder.com/30?text=🌲'">
+            <img src="trees/${i}.png" alt="Árbol ${i}" onerror="this.src='https://via.placeholder.com/40?text=🌲'">
             <div class="tree-info">
-                <div class="tree-name">🌲 Árbol #${i}</div>
+                <div class="tree-name">Árbol #${i}</div>
                 <div class="tree-cost">💰 ${formatTime(cost)}</div>
             </div>
         `;
@@ -193,37 +199,32 @@ function generateTreeMenu() {
     }
 }
 
-// Seleccionar árbol
 function selectTree(treeNumber) {
     selectedTreeIndex = treeNumber;
     generateTreeMenu();
     const cost = getTreeCost(treeNumber);
     document.getElementById('selected-display').innerHTML = `
         <img src="trees/${treeNumber}.png" alt="Árbol ${treeNumber}" onerror="this.style.display='none'">
-        <p><strong>Árbol #${treeNumber}</strong></p>
-        <p>💰 Costo: ${formatTime(cost)}</p>
-        <button id="start-tree-btn" class="btn-primary" style="margin-top:15px; width:100%">🌱 Comenzar cuenta regresiva 🌱</button>
-        <p style="font-size:11px; color:#666; margin-top:10px">✅ 1. Elige un árbol</p>
-        <p style="font-size:11px; color:#666">✅ 2. Haz clic en "Comenzar cuenta regresiva"</p>
-        <p style="font-size:10px; color:#f44336; margin-top:10px">🔒 Durante el contador NO podrás hacer NADA</p>
+        <p style="font-weight: 600; margin: 12px 0;">Árbol #${treeNumber}</p>
+        <p style="color: #ff6f00; font-weight: 500;">💰 ${formatTime(cost)}</p>
+        <button id="start-tree-btn" class="btn-primary" style="margin-top: 20px; width: 100%;">🌱 Comenzar</button>
+        <p style="font-size: 12px; color: #666; margin-top: 12px;">1. Elige árbol | 2. Comienza</p>
     `;
     
     const startBtn = document.getElementById('start-tree-btn');
     if (startBtn) {
-        const newStartBtn = startBtn.cloneNode(true);
-        startBtn.parentNode.replaceChild(newStartBtn, startBtn);
-        newStartBtn.onclick = (e) => {
+        const newBtn = startBtn.cloneNode(true);
+        startBtn.parentNode.replaceChild(newBtn, startBtn);
+        newBtn.onclick = (e) => {
             e.stopPropagation();
-            e.preventDefault();
             startFocusForSelectedTree();
         };
     }
 }
 
-// Iniciar bloqueo para el árbol seleccionado
 function startFocusForSelectedTree() {
     if (isBlocked) {
-        alert(`🔒 ${userName}, ya estás en modo enfoque. Termina o reinicia.`);
+        alert(`🔒 ${userName}, ya estás en modo enfoque`);
         return;
     }
     
@@ -237,9 +238,9 @@ function startFocusForSelectedTree() {
     violationCount = 0;
     
     document.getElementById('blocker').classList.add('active');
-    document.getElementById('mode-status').innerText = '🔴 ENFOQUE ACTIVO';
+    document.getElementById('mode-status').innerText = '🔴 ENFOQUE';
     document.getElementById('next-unlock').innerText = formatTime(focusMinutes);
-    document.getElementById('blocker-message').innerHTML = `${userName}, estás cultivando el Árbol #${selectedTreeIndex} 🌱`;
+    document.getElementById('blocker-message').innerHTML = `${userName}, cultivando Árbol #${selectedTreeIndex}`;
     
     updateBlockerTimer();
     
@@ -254,7 +255,6 @@ function startFocusForSelectedTree() {
     }, 1000);
 }
 
-// Actualizar timer del bloqueador
 function updateBlockerTimer() {
     const minutes = Math.floor(currentFocusTime / 60);
     const seconds = currentFocusTime % 60;
@@ -262,10 +262,20 @@ function updateBlockerTimer() {
     
     const totalSeconds = getTreeCost(selectedTreeIndex) * 60;
     const progress = ((totalSeconds - currentFocusTime) / totalSeconds) * 100;
-    document.getElementById('progress-fill').style.width = `${Math.min(100, Math.max(0, progress))}%`;
+    const circumference = 2 * Math.PI * 90;
+    const offset = circumference - (progress / 100) * circumference;
+    
+    const circle = document.getElementById('progress-ring-circle');
+    if (circle) {
+        circle.style.strokeDashoffset = offset;
+    }
+    
+    const percentageSpan = document.getElementById('progress-percentage');
+    if (percentageSpan) {
+        percentageSpan.innerText = `${Math.round(progress)}%`;
+    }
 }
 
-// Desbloquear para plantar
 function unlockForPlanting() {
     if (!isBlocked) return;
     
@@ -273,30 +283,38 @@ function unlockForPlanting() {
     isBlocked = false;
     isPlantingMode = true;
     
+    // REPRODUCIR ALARMA
+    playAlarm();
+    
     document.getElementById('blocker').classList.remove('active');
-    document.getElementById('mode-status').innerText = '🟢 TIEMPO DE PLANTAR';
-    document.getElementById('next-unlock').innerText = `${UNLOCK_DURATION} segundos`;
+    document.getElementById('mode-status').innerText = '🟢 PLANTAR';
+    document.getElementById('next-unlock').innerText = `${Math.floor(UNLOCK_DURATION / 60)} minutos`;
     
     const msg = document.createElement('div');
-    msg.textContent = `🎉 ${userName}, ¡COMPLETASTE EL ENFOQUE! Planta tu Árbol #${selectedTreeIndex} 🎉`;
+    msg.innerHTML = `
+        <div style="font-size: 48px;">🎉</div>
+        <h2>¡Tiempo completado!</h2>
+        <p>Tienes 5 minutos para plantar tu árbol</p>
+        <p style="font-size: 14px; color: #4caf50; margin-top: 12px;">🌳 Árbol #${selectedTreeIndex}</p>
+    `;
     msg.style.cssText = `
         position: fixed;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        background: #4caf50;
+        background: rgba(0,0,0,0.9);
+        backdrop-filter: blur(20px);
         color: white;
-        padding: 20px;
-        border-radius: 10px;
+        padding: 32px;
+        border-radius: 48px;
         z-index: 10001;
-        font-size: 18px;
         text-align: center;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.4);
         animation: bounce 0.5s ease;
-        max-width: 90%;
+        min-width: 320px;
     `;
     document.body.appendChild(msg);
-    setTimeout(() => msg.remove(), 3000);
+    setTimeout(() => msg.remove(), 5000);
     
     const autoLockTimeout = setTimeout(() => {
         if (isPlantingMode && !isBlocked) {
@@ -309,8 +327,8 @@ function unlockForPlanting() {
                 right: 20px;
                 background: #f44336;
                 color: white;
-                padding: 10px;
-                border-radius: 5px;
+                padding: 12px 20px;
+                border-radius: 30px;
                 z-index: 9999;
             `;
             document.body.appendChild(timeoutMsg);
@@ -321,15 +339,14 @@ function unlockForPlanting() {
     window.pendingAutoLock = autoLockTimeout;
 }
 
-// Plantar árbol
 function plantTree(x, y) {
     if (isBlocked) {
-        alert(`🔒 ${userName}, celular bloqueado. Completa la cuenta regresiva primero.`);
+        alert(`🔒 ${userName}, espera a que termine el enfoque`);
         return;
     }
     
     if (!isPlantingMode) {
-        alert(`🌱 ${userName}, primero elige un árbol y haz clic en "Comenzar cuenta regresiva".`);
+        alert(`🌱 ${userName}, primero completa la cuenta regresiva`);
         return;
     }
     
@@ -357,15 +374,15 @@ function plantTree(x, y) {
     isPlantingMode = false;
     
     const msg = document.createElement('div');
-    msg.textContent = `✅ ¡Árbol #${selectedTreeIndex} plantado, ${userName}! 🌳 Sin infracciones!`;
+    msg.textContent = `✅ ¡Árbol #${selectedTreeIndex} plantado, ${userName}!`;
     msg.style.cssText = `
         position: fixed;
         bottom: 20px;
         right: 20px;
         background: #4caf50;
         color: white;
-        padding: 10px;
-        border-radius: 5px;
+        padding: 12px 20px;
+        border-radius: 30px;
         z-index: 9999;
         animation: fadeOut 3s forwards;
     `;
@@ -373,10 +390,9 @@ function plantTree(x, y) {
     setTimeout(() => msg.remove(), 3000);
     
     document.getElementById('mode-status').innerText = '✅ Completado';
-    document.getElementById('next-unlock').innerText = 'Elige otro árbol';
+    document.getElementById('next-unlock').innerText = 'Elige otro';
 }
 
-// Renderizar jardín
 function renderGarden() {
     const garden = document.getElementById('garden');
     garden.innerHTML = '';
@@ -384,12 +400,11 @@ function renderGarden() {
     plantedTrees.forEach((tree, idx) => {
         const treeDiv = document.createElement('div');
         treeDiv.className = 'tree-planted';
-        treeDiv.style.position = 'absolute';
         treeDiv.style.left = `${tree.x || (idx * 70 % 800)}px`;
         treeDiv.style.top = `${tree.y || (Math.floor(idx / 12) * 70)}px`;
         
         treeDiv.innerHTML = `
-            <img src="trees/${tree.number}.png" alt="Árbol ${tree.number}" onerror="this.src='https://via.placeholder.com/55?text=🌲'">
+            <img src="trees/${tree.number}.png" alt="Árbol ${tree.number}" onerror="this.src='https://via.placeholder.com/60?text=🌲'">
             <div class="tree-tooltip">
                 Árbol #${tree.number} | ${formatTime(tree.cost)}
             </div>
@@ -397,7 +412,7 @@ function renderGarden() {
         
         treeDiv.onclick = (e) => {
             e.stopPropagation();
-            if (confirm(`${userName}, ¿eliminar este árbol #${tree.number}?`)) {
+            if (confirm(`${userName}, ¿eliminar este árbol?`)) {
                 plantedTrees.splice(idx, 1);
                 renderGarden();
                 saveData();
@@ -409,69 +424,4 @@ function renderGarden() {
     });
 }
 
-function updateStats() {
-    document.getElementById('tree-count').innerText = plantedTrees.length;
-    const totalTime = plantedTrees.reduce((sum, tree) => sum + tree.cost, 0);
-    document.getElementById('total-time').innerText = formatTime(totalTime);
-}
-
-function clearGarden() {
-    if (confirm(`⚠️ ${userName}, ¿eliminar TODOS tus árboles?`)) {
-        plantedTrees = [];
-        renderGarden();
-        saveData();
-        updateStats();
-    }
-}
-
-function setupGardenClick() {
-    const garden = document.getElementById('garden');
-    garden.addEventListener('click', (e) => {
-        const rect = garden.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        plantTree(x, y);
-    });
-}
-
-// Agregar animaciones
-function addAnimations() {
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes shake {
-            0%, 100% { transform: translate(-50%, -50%) translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translate(-50%, -50%) translateX(-10px); }
-            20%, 40%, 60%, 80% { transform: translate(-50%, -50%) translateX(10px); }
-        }
-        
-        @keyframes bounce {
-            0%, 100% { transform: translate(-50%, -50%) scale(1); }
-            50% { transform: translate(-50%, -50%) scale(1.1); }
-        }
-        
-        @keyframes fadeOut {
-            0% { opacity: 1; }
-            70% { opacity: 1; }
-            100% { opacity: 0; visibility: hidden; }
-        }
-    `;
-    document.head.appendChild(style);
-}
-
-// Inicializar
-function init() {
-    loadSavedData();
-    setupGardenClick();
-    setupStrictDetection();
-    addAnimations();
-    
-    if (userName) {
-        document.getElementById('user-name').value = userName;
-        startApp();
-    }
-    
-    document.getElementById('start-btn').onclick = startApp;
-    document.getElementById('clear-garden').onclick = clearGarden;
-}
-
-window.onload = init;
+function updateStats()
