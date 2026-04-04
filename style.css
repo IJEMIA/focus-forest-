@@ -1,1 +1,82 @@
+/* Pantalla de bienvenida */
+#welcome-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1a472a 0%, #2d5a3b 100%);
+    z-index: 20000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px);
+}
 
+.welcome-card {
+    background: rgba(255,255,255,0.95);
+    border-radius: 30px;
+    padding: 40px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    animation: fadeInUp 0.5s ease;
+    max-width: 400px;
+    width: 90%;
+}
+
+.welcome-card h1 {
+    color: #2d5a3b;
+    margin-bottom: 15px;
+    font-size: 32px;
+}
+
+.welcome-card p {
+    color: #666;
+    margin-bottom: 25px;
+}
+
+.welcome-card input {
+    width: 100%;
+    padding: 15px;
+    font-size: 18px;
+    border: 2px solid #ddd;
+    border-radius: 50px;
+    margin-bottom: 20px;
+    text-align: center;
+    transition: all 0.3s;
+}
+
+.welcome-card input:focus {
+    outline: none;
+    border-color: #4caf50;
+    box-shadow: 0 0 10px rgba(76,175,80,0.3);
+}
+
+.welcome-card button {
+    width: 100%;
+    padding: 15px;
+    font-size: 18px;
+    background: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.welcome-card button:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(76,175,80,0.4);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
