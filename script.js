@@ -7,7 +7,9 @@ let isBlocked = false;
 let selectedTreeIndex = 1;
 let plantedTrees = [];
 let userName = "";
-let isPlantingMode = false; // Modo para plantar después del bloqueo
+let isPlantingMode = false;
+let isTimerPaused = false; // Para saber si el timer está pausado por cambio de pestaña
+let remainingTimeBeforePause = 0; // Tiempo restante antes de pausar
 
 // Calcular costo: árbol 1 = 15min, 2 = 30min, 3 = 45min... 15 = 225min
 function getTreeCost(treeNumber) {
@@ -44,6 +46,135 @@ function loadSavedData() {
         renderGarden();
         updateStats();
     }
+}
+
+// Detectar si la pestaña está visible
+function isTabVisible() {
+    return !document.hidden;
+}
+
+// Mostrar advertencia de pausa
+function showPauseWarning() {
+    const warningDiv = document.createElement('div');
+    warningDiv.id = 'pause-warning';
+    warningDiv.innerHTML = `
+        <div style="position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#f44336; color:white; padding:15px 25px; border-radius:10px; z-index:20001; text-align:center; box-shadow:0 5px 20px rgba(0,0,0,0.3); animation:slideDown 0.3s ease;">
+            ⚠️ ¡No salgas de la pestaña! El contador se ha detenido ⚠️
+            <br>
+            <small>Vuelve a esta pestaña para continuar</small>
+        </div>
+    `;
+    document.body.appendChild(warningDiv);
+    setTimeout(() => {
+        const warning = document.getElementById('pause-warning');
+        if (warning) warning.remove();
+    }, 4000);
+}
+
+// Pausar el timer (cuando se cambia de pestaña)
+function pauseTimer() {
+    if (isBlocked && focusInterval && !isTimerPaused) {
+        // Guardar tiempo restante
+        remainingTimeBeforePause = currentFocusTime;
+        
+        // Detener el intervalo
+        clearInterval(focusInterval);
+        focusInterval = null;
+        isTimerPaused = true;
+        
+        // Mostrar mensaje en el bloqueador
+        const blockerContent = document.querySelector('.blocker-content');
+        const pauseMsg = document.createElement('div');
+        pauseMsg.id = 'pause-message';
+        pauseMsg.style.cssText = `
+            background: #f44336;
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 20px;
+            animation: pulse 1s infinite;
+        `;
+        pauseMsg.innerHTML = '⏸️ CONTADOR PAUSADO - VUELVE A LA PESTAÑA ⏸️';
+        
+        // Verificar si ya existe mensaje de pausa
+        if (!document.getElementById('pause-message')) {
+            blockerContent.appendChild(pauseMsg);
+        }
+        
+        showPauseWarning();
+    }
+}
+
+// Reanudar el timer (cuando se vuelve a la pestaña)
+function resumeTimer() {
+    if (isBlocked && isTimerPaused && remainingTimeBeforePause > 0) {
+        // Restaurar tiempo
+        currentFocusTime = remainingTimeBeforePause;
+        remainingTimeBeforePause = 0;
+        isTimerPaused = false;
+        
+        // Eliminar mensaje de pausa
+        const pauseMsg = document.getElementById('pause-message');
+        if (pauseMsg) pauseMsg.remove();
+        
+        // Reiniciar el intervalo
+        if (focusInterval) clearInterval(focusInterval);
+        
+        focusInterval = setInterval(() => {
+            if (currentFocusTime <= 0) {
+                clearInterval(focusInterval);
+                unlockForPlanting();
+            } else {
+                currentFocusTime--;
+                updateBlockerTimer();
+            }
+        }, 1000);
+        
+        // Mostrar mensaje de reanudación
+        const resumeMsg = document.createElement('div');
+        resumeMsg.innerHTML = '▶️ Contador reanudado. No salgas de la pestaña. ▶️';
+        resumeMsg.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #4caf50;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 9999;
+            animation: fadeOut 2s forwards;
+        `;
+        document.body.appendChild(resumeMsg);
+        setTimeout(() => resumeMsg.remove(), 2000);
+    }
+}
+
+// Detectar cambios de visibilidad de la pestaña
+function setupVisibilityDetection() {
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            // Usuario cambió de pestaña o minimizó
+            pauseTimer();
+        } else {
+            // Usuario volvió a la pestaña
+            if (isTimerPaused) {
+                resumeTimer();
+            }
+        }
+    });
+    
+    // Detectar cuando la ventana pierde foco (click fuera)
+    window.addEventListener('blur', () => {
+        if (isBlocked && !isTimerPaused) {
+            pauseTimer();
+        }
+    });
+    
+    // Detectar cuando la ventana recupera foco
+    window.addEventListener('focus', () => {
+        if (isTimerPaused) {
+            resumeTimer();
+        }
+    });
 }
 
 // Iniciar aplicación después del nombre
@@ -105,6 +236,7 @@ function selectTree(treeNumber) {
         <p>💰 Costo: ${formatTime(cost)}</p>
         <button id="start-tree-btn" class="btn-primary" style="margin-top:15px; width:100%">🌱 Comenzar cuenta regresiva 🌱</button>
         <p style="font-size:11px; color:#666; margin-top:10px">⚠️ Primero elige el árbol, luego haz clic en el botón</p>
+        <p style="font-size:10px; color:#f44336; margin-top:10px">🔒 NO cierres ni cambies de pestaña o el contador se detendrá</p>
     `;
     
     // Agregar evento al botón de comenzar
@@ -128,10 +260,13 @@ function startFocusForSelectedTree() {
     
     isBlocked = true;
     isPlantingMode = false;
+    isTimerPaused = false;
+    remainingTimeBeforePause = 0;
+    
     document.getElementById('blocker').classList.add('active');
     document.getElementById('mode-status').innerText = 'Enfoque activo';
     document.getElementById('next-unlock').innerText = formatTime(focusMinutes);
-    document.getElementById('blocker-message').innerHTML = `${userName}, estás cultivando el Árbol #${selectedTreeIndex} 🌱`;
+    document.getElementById('blocker-message').innerHTML = `${userName}, estás cultivando el Árbol #${selectedTreeIndex} 🌱<br><small style="color:#ffd700">⚠️ No cierres ni cambies de pestaña</small>`;
     
     updateBlockerTimer();
     
@@ -164,9 +299,15 @@ function unlockForPlanting() {
     clearInterval(focusInterval);
     isBlocked = false;
     isPlantingMode = true;
+    isTimerPaused = false;
+    
     document.getElementById('blocker').classList.remove('active');
     document.getElementById('mode-status').innerText = 'Tiempo de plantar';
     document.getElementById('next-unlock').innerText = `${UNLOCK_DURATION} segundos`;
+    
+    // Eliminar mensaje de pausa si existe
+    const pauseMsg = document.getElementById('pause-message');
+    if (pauseMsg) pauseMsg.remove();
     
     // Mostrar mensaje temporal
     const msg = document.createElement('div');
@@ -330,6 +471,7 @@ function setupGardenClick() {
 function init() {
     loadSavedData();
     setupGardenClick();
+    setupVisibilityDetection(); // Activar detección de cambios de pestaña
     
     // Si ya había nombre, mostrar directamente
     if (userName) {
@@ -340,6 +482,28 @@ function init() {
     document.getElementById('start-btn').onclick = startApp;
     document.getElementById('clear-garden').onclick = clearGarden;
 }
+
+// Agregar animaciones CSS adicionales
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    }
+    
+    @keyframes fadeOut {
+        0% { opacity: 1; }
+        70% { opacity: 1; }
+        100% { opacity: 0; visibility: hidden; }
+    }
+`;
+document.head.appendChild(style);
 
 // Iniciar
 window.onload = init;
