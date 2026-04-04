@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Focus Forest - Jardín de Enfoque</title>
+    <title>Focus Forest - Jardín con bloqueo de celular</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..700&display=swap" rel="stylesheet">
@@ -18,7 +18,7 @@
             <p>Tu jardín de concentración y recompensa</p>
             <input type="text" id="user-name" placeholder="Tu nombre" maxlength="30" autocomplete="off">
             <button id="start-btn" class="btn-primary">🌱 Comenzar mi jardín</button>
-            <p class="cheat-hint">(Modo prueba: ingresa el código secreto)</p>
+            <p class="cheat-hint">(Modo prueba: escribe el código secreto)</p>
         </div>
     </div>
 
@@ -76,7 +76,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="garden-area">
+                <div class="garden-area" id="garden-area">
                     <canvas id="garden-canvas" class="garden-canvas"></canvas>
                     <div id="entities-overlay" class="entities-overlay"></div>
                 </div>
