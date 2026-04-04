@@ -34,6 +34,7 @@ let totalBlockedSeconds = 0;
 let isPausedForLock = false;
 let pausedTime = 0;
 let lastFocusLoss = 0;
+let coloringModeActive = false; // MODO COLOREADO ACTIVADO/DESACTIVADO
 
 let canvas = null;
 let ctx = null;
@@ -69,12 +70,33 @@ document.addEventListener('DOMContentLoaded', function() {
     const resetColorsBtn = document.getElementById('reset-all-colors');
     if (resetColorsBtn) resetColorsBtn.onclick = resetAllColors;
     
+    const toggleColoringBtn = document.getElementById('toggle-coloring-mode');
+    if (toggleColoringBtn) toggleColoringBtn.onclick = toggleColoringMode;
+    
     if (userName) {
         const nameInput = document.getElementById('user-name');
         if (nameInput) nameInput.value = userName;
         startApp();
     }
 });
+
+function toggleColoringMode() {
+    coloringModeActive = !coloringModeActive;
+    const btn = document.getElementById('toggle-coloring-mode');
+    if (btn) {
+        if (coloringModeActive) {
+            btn.textContent = '🎨 Modo Coloreo: ACTIVADO';
+            btn.style.background = '#ff9800';
+            btn.style.color = 'white';
+            showMessage("🎨 Modo coloreo ACTIVADO - Puedes pintar los cuadros", "#ff9800");
+        } else {
+            btn.textContent = '🎨 Modo Coloreo: DESACTIVADO';
+            btn.style.background = '#666';
+            btn.style.color = 'white';
+            showMessage("🎨 Modo coloreo DESACTIVADO - Puedes plantar árboles", "#4caf50");
+        }
+    }
+}
 
 function initCanvas() {
     canvas = document.getElementById('garden-canvas');
@@ -139,9 +161,22 @@ function handleCanvasClickAt(x, y) {
     const col = Math.floor(x / CELL_SIZE);
     const row = Math.floor(y / CELL_SIZE);
     if (row >= 0 && row < rows && col >= 0 && col < cols) {
-        gridColors[row][col] = brushColor;
-        drawGrid();
-        saveGridColors();
+        if (coloringModeActive) {
+            // Modo coloreo: cambiar color del cuadro
+            gridColors[row][col] = brushColor;
+            drawGrid();
+            saveGridColors();
+            showMessage(`🎨 Cuadro (${col},${row}) pintado`, "#ff9800", 500);
+        } else {
+            // Modo plantación: plantar árbol si está en modo plantación
+            if (isPlantingMode && !isBlocked) {
+                plantTree(x, y);
+            } else if (!isPlantingMode && !isBlocked) {
+                showMessage("🌱 Primero completa un tiempo de enfoque para plantar", "#ff9800", 1500);
+            } else if (isBlocked) {
+                showMessage("🔒 Celular bloqueado, espera a que termine el enfoque", "#f44336", 1500);
+            }
+        }
     }
 }
 
@@ -182,12 +217,12 @@ function setupGridControls() {
     }
 }
 
-function showMessage(text, bgColor = "#4caf50") {
+function showMessage(text, bgColor = "#4caf50", duration = 2000) {
     const msg = document.createElement('div');
     msg.textContent = text;
-    msg.style.cssText = `position:fixed; bottom:20px; left:20px; background:${bgColor}; color:white; padding:8px 16px; border-radius:25px; z-index:9999; font-size:12px; animation:fadeOut 3s forwards;`;
+    msg.style.cssText = `position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:${bgColor}; color:white; padding:10px 20px; border-radius:30px; z-index:9999; font-size:13px; animation:fadeOut ${duration/1000}s forwards; text-align:center; white-space:nowrap;`;
     document.body.appendChild(msg);
-    setTimeout(() => msg.remove(), 3000);
+    setTimeout(() => msg.remove(), duration);
 }
 
 function getTreeCost(tree) {
@@ -495,8 +530,14 @@ function unlockToPlant() {
 }
 
 function plantTree(x, y) {
-    if (isBlocked) { alert(`🔒 ${userName}, espera a que termine el enfoque`); return; }
-    if (!isPlantingMode) { alert(`🌱 ${userName}, primero completa la cuenta regresiva`); return; }
+    if (isBlocked) { 
+        showMessage("🔒 Celular bloqueado, espera a que termine el enfoque", "#f44336");
+        return; 
+    }
+    if (!isPlantingMode) { 
+        showMessage("🌱 Primero completa un tiempo de enfoque para plantar", "#ff9800");
+        return; 
+    }
     
     const tree = TREES[selectedTreeIndex];
     const plantedTree = {
@@ -531,8 +572,8 @@ function renderTrees() {
     plantedTrees.forEach((tree, idx) => {
         const treeDiv = document.createElement('div');
         treeDiv.className = 'tree-planted';
-        treeDiv.style.left = `${tree.x || (idx * 40 % 800)}px`;
-        treeDiv.style.top = `${tree.y || (Math.floor(idx / 20) * 40)}px`;
+        treeDiv.style.left = `${tree.x || (idx * 45 % 800)}px`;
+        treeDiv.style.top = `${tree.y || (Math.floor(idx / 18) * 45)}px`;
         treeDiv.innerHTML = `${tree.emoji}<div class="tree-tooltip">${tree.name} | ${formatTime(tree.cost)}</div>`;
         treeDiv.onclick = (e) => {
             e.stopPropagation();
@@ -541,6 +582,7 @@ function renderTrees() {
                 renderTrees();
                 saveData();
                 updateStats();
+                showMessage(`🗑️ ${tree.name} eliminado`, "#ff9800");
             }
         };
         overlay.appendChild(treeDiv);
@@ -566,16 +608,6 @@ function clearGarden() {
 }
 
 function setupGardenClick() {
-    const overlay = document.getElementById('trees-overlay');
-    const garden = document.getElementById('garden-canvas');
-    if (garden) {
-        garden.addEventListener('click', (e) => {
-            const rect = garden.getBoundingClientRect();
-            const scaleX = garden.width / rect.width;
-            const scaleY = garden.height / rect.height;
-            const x = (e.clientX - rect.left) * scaleX;
-            const y = (e.clientY - rect.top) * scaleY;
-            if (isPlantingMode && !isBlocked) plantTree(x, y);
-        });
-    }
+    // El click ya se maneja en handleCanvasClick
+    console.log("Garden click setup completed");
 }
