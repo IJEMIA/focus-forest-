@@ -225,18 +225,18 @@ body {
 .tree-list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    max-height: 300px;
+    gap: 8px;
+    max-height: 350px;
     overflow-y: auto;
 }
 
 .tree-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 10px;
+    gap: 10px;
+    padding: 8px;
     background: white;
-    border-radius: 14px;
+    border-radius: 12px;
     cursor: pointer;
     transition: all 0.2s;
     border: 1px solid rgba(0,0,0,0.05);
@@ -252,8 +252,8 @@ body {
 }
 
 .tree-item img {
-    width: 40px;
-    height: 40px;
+    width: 24px;
+    height: 24px;
     object-fit: contain;
 }
 
@@ -263,11 +263,11 @@ body {
 
 .tree-name {
     font-weight: 600;
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .tree-cost {
-    font-size: 12px;
+    font-size: 11px;
     color: #ff6f00;
     margin-top: 2px;
 }
@@ -316,8 +316,8 @@ body {
 
 .garden {
     background: #8b5a2b;
-    background-image: linear-gradient(rgba(100,70,30,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(100,70,30,0.5) 1px, transparent 1px);
-    background-size: 20px 20px;
+    background-image: linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px);
+    background-size: 30px 30px;
     min-height: 400px;
     border-radius: 20px;
     position: relative;
@@ -335,8 +335,8 @@ body {
     position: absolute;
     cursor: pointer;
     transition: all 0.2s ease;
-    width: 60px;
-    height: 60px;
+    width: 30px;
+    height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -348,11 +348,11 @@ body {
 }
 
 .tree-planted img {
-    width: 50px;
-    height: 50px;
+    width: 24px;
+    height: 24px;
     object-fit: contain;
     pointer-events: none;
-    filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+    filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.3));
 }
 
 .tree-planted .tree-tooltip {
@@ -362,9 +362,9 @@ body {
     transform: translateX(-50%);
     background: rgba(0,0,0,0.85);
     color: white;
-    padding: 4px 10px;
-    border-radius: 16px;
-    font-size: 10px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 9px;
     white-space: nowrap;
     display: none;
     z-index: 100;
@@ -391,15 +391,15 @@ body {
 .status-card {
     background: white;
     border-radius: 18px;
-    padding: 14px;
+    padding: 12px;
     margin-bottom: 16px;
 }
 
 .status-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 8px 0;
+    gap: 10px;
+    padding: 6px 0;
     border-bottom: 1px solid rgba(0,0,0,0.05);
 }
 
@@ -408,51 +408,91 @@ body {
 }
 
 .status-icon {
-    font-size: 22px;
-    width: 36px;
+    font-size: 20px;
+    width: 32px;
     text-align: center;
 }
 
 .status-label {
     display: block;
-    font-size: 11px;
+    font-size: 10px;
     color: #666;
 }
 
 .status-value {
     display: block;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
 }
 
 .selected-card {
     background: white;
     border-radius: 18px;
-    padding: 16px;
+    padding: 12px;
     text-align: center;
 }
 
 .selected-card img {
-    width: 60px;
-    height: 60px;
+    width: 40px;
+    height: 40px;
     object-fit: contain;
-    margin: 8px auto;
+    margin: 6px auto;
 }
 
 /* Botones */
 .garden-controls {
     margin-top: 16px;
     display: flex;
-    gap: 12px;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.color-picker-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    padding: 6px 12px;
+    border-radius: 30px;
+    font-size: 12px;
+}
+
+.color-picker-container label {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+#grid-color-picker {
+    width: 40px;
+    height: 40px;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    cursor: pointer;
+    padding: 0;
+}
+
+.btn-small {
+    padding: 6px 12px;
+    font-size: 12px;
+    background: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+.btn-small:active {
+    transform: scale(0.95);
 }
 
 button {
-    padding: 12px 20px;
+    padding: 10px 16px;
     border: none;
-    border-radius: 14px;
+    border-radius: 25px;
     cursor: pointer;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 13px;
     font-family: inherit;
     transition: all 0.2s;
 }
