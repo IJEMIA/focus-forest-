@@ -9,7 +9,7 @@ let plantedTrees = [];
 let userName = "";
 let isPlantingMode = false;
 let violationCount = 0;
-let isPausedForAuth = false; // Para pausa temporal durante autenticación
+let isPausedForAuth = false;
 let pausedRemainingTime = 0;
 
 // Elemento de audio
@@ -44,17 +44,14 @@ function playAlarm() {
 }
 
 // ============ AUTENTICACIÓN BIOMÉTRICA ============
-// Verificar si el dispositivo soporta autenticación biométrica
 function supportsBiometricAuth() {
     return window.PublicKeyCredential && 
            PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable &&
            window.PasswordCredential;
 }
 
-// Mostrar diálogo de autenticación
 async function authenticateUser() {
     return new Promise((resolve) => {
-        // Crear modal de autenticación
         const authModal = document.createElement('div');
         authModal.id = 'auth-modal';
         authModal.style.cssText = `
@@ -77,7 +74,7 @@ async function authenticateUser() {
             <div style="background: white; border-radius: 32px; padding: 32px; text-align: center; max-width: 320px; width: 90%;">
                 <div style="font-size: 48px; margin-bottom: 16px;">🔐</div>
                 <h2 style="margin-bottom: 8px;">Verificar identidad</h2>
-                <p style="color: #666; margin-bottom: 24px;">${userName}, confirma que eres tú</p>
+                <p style="color: #666; margin-bottom: 24px;">${userName || 'Usuario'}, confirma que eres tú</p>
                 <div id="auth-options" style="display: flex; flex-direction: column; gap: 12px;">
                     <button id="biometric-btn" class="btn-primary" style="padding: 14px; border-radius: 14px;">🔓 Huella / Face ID</button>
                     <button id="pin-btn" class="btn-secondary" style="padding: 14px; border-radius: 14px; background: #666;">🔢 Código PIN</button>
@@ -92,7 +89,6 @@ async function authenticateUser() {
         
         document.body.appendChild(authModal);
         
-        // Configurar eventos
         const biometricBtn = document.getElementById('biometric-btn');
         const pinBtn = document.getElementById('pin-btn');
         const cancelBtn = document.getElementById('cancel-auth');
@@ -100,36 +96,15 @@ async function authenticateUser() {
         const pinInput = document.getElementById('pin-input');
         const verifyPinBtn = document.getElementById('verify-pin-btn');
         
-        // PIN correcto (1234 por defecto, se puede cambiar)
         const CORRECT_PIN = "1234";
         
         biometricBtn.onclick = async () => {
             try {
-                // Simular autenticación biométrica
-                if (supportsBiometricAuth()) {
-                    // Intentar usar WebAuthn
-                    const credential = await navigator.credentials.get({
-                        publicKey: {
-                            challenge: new Uint8Array(32),
-                            allowCredentials: [],
-                            timeout: 60000,
-                            userVerification: "required",
-                        }
-                    });
-                    if (credential) {
-                        authModal.remove();
-                        resolve(true);
-                    } else {
-                        throw new Error("Autenticación fallida");
-                    }
-                } else {
-                    // Fallback: alerta simulada
-                    alert("🔓 En dispositivos móviles reales, aquí se activaría Face ID / Huella digital.\n\n(SIMULACIÓN: Autenticación exitosa)");
-                    authModal.remove();
-                    resolve(true);
-                }
+                alert("🔓 (SIMULACIÓN) Autenticación biométrica exitosa");
+                authModal.remove();
+                resolve(true);
             } catch(e) {
-                alert("❌ Autenticación fallida. Intenta con PIN.");
+                alert("❌ Autenticación fallida");
                 resolve(false);
             }
         };
@@ -163,7 +138,6 @@ async function authenticateUser() {
     });
 }
 
-// Mostrar botón para ver contador (solo cuando está bloqueado)
 function showViewCounterButton() {
     let viewBtn = document.getElementById('view-counter-btn');
     if (!viewBtn && isBlocked) {
@@ -188,7 +162,6 @@ function showViewCounterButton() {
             transition: all 0.3s;
         `;
         btn.onclick = async () => {
-            // Pausar contador temporalmente
             if (focusInterval && !isPausedForAuth) {
                 clearInterval(focusInterval);
                 focusInterval = null;
@@ -199,13 +172,11 @@ function showViewCounterButton() {
             const authenticated = await authenticateUser();
             
             if (authenticated) {
-                // Mostrar contador por 10 segundos
                 showTemporaryCounter();
             } else {
                 alert("🔒 Autenticación fallida. El contador continúa.");
             }
             
-            // Reanudar contador
             if (isPausedForAuth && isBlocked) {
                 currentFocusTime = pausedRemainingTime;
                 isPausedForAuth = false;
@@ -229,7 +200,6 @@ function hideViewCounterButton() {
     if (btn) btn.remove();
 }
 
-// Mostrar contador temporalmente
 function showTemporaryCounter() {
     const tempModal = document.createElement('div');
     tempModal.id = 'temp-counter-modal';
@@ -263,27 +233,24 @@ function showTemporaryCounter() {
     
     document.body.appendChild(tempModal);
     
-    // Cerrar después de 10 segundos
     setTimeout(() => {
         tempModal.remove();
     }, 10000);
     
-    // Cerrar al tocar
     tempModal.onclick = () => tempModal.remove();
 }
 
 // ============ ÁRBOL DE PRUEBA ============
-// Plantar árbol de prueba (emoji, 1 minuto, desaparece a los 5 minutos)
 function plantTestTree(x, y) {
     const testTree = {
         id: Date.now(),
         number: 'test',
-        cost: 1, // 1 minuto
+        cost: 1,
         x: x,
         y: y,
         isTest: true,
         plantedAt: Date.now(),
-        expiresAt: Date.now() + (5 * 60 * 1000) // 5 minutos
+        expiresAt: Date.now() + (5 * 60 * 1000)
     };
     
     plantedTrees.push(testTree);
@@ -291,7 +258,6 @@ function plantTestTree(x, y) {
     saveData();
     updateStats();
     
-    // Programar desaparición
     setTimeout(() => {
         const index = plantedTrees.findIndex(t => t.id === testTree.id);
         if (index !== -1) {
@@ -300,7 +266,6 @@ function plantTestTree(x, y) {
             saveData();
             updateStats();
             
-            // Mostrar notificación
             const msg = document.createElement('div');
             msg.textContent = `🌲 El árbol de prueba ha desaparecido (expiró después de 5 minutos)`;
             msg.style.cssText = `
@@ -336,13 +301,11 @@ function plantTestTree(x, y) {
     setTimeout(() => msg.remove(), 3000);
 }
 
-// Calcular costo
 function getTreeCost(treeNumber) {
     if (treeNumber === 'test') return 1;
     return treeNumber * 15;
 }
 
-// Formatear tiempo
 function formatTime(minutes) {
     if (minutes === 1) return `1 min`;
     if (minutes < 60) return `${minutes} min`;
@@ -352,11 +315,10 @@ function formatTime(minutes) {
     return `${hours}h ${mins}min`;
 }
 
-// Guardar datos
 function saveData() {
     localStorage.setItem('focusForest', JSON.stringify({
         userName: userName,
-        plantedTrees: plantedTrees.filter(t => !t.isTest) // No guardar árboles de prueba
+        plantedTrees: plantedTrees.filter(t => !t.isTest)
     }));
 }
 
@@ -366,7 +328,8 @@ function loadSavedData() {
         const data = JSON.parse(saved);
         if (data.userName) {
             userName = data.userName;
-            document.getElementById('user-name').value = userName;
+            const nameInput = document.getElementById('user-name');
+            if (nameInput) nameInput.value = userName;
         }
         plantedTrees = data.plantedTrees || [];
         renderGarden();
@@ -374,7 +337,6 @@ function loadSavedData() {
     }
 }
 
-// Reiniciar contador
 function resetCounter(reason) {
     if (!isBlocked) return;
     
@@ -421,13 +383,18 @@ function resetCounter(reason) {
     isPlantingMode = false;
     currentFocusTime = 0;
     
-    document.getElementById('blocker').classList.remove('active');
-    document.getElementById('mode-status').innerText = 'Reiniciado';
-    document.getElementById('next-unlock').innerText = 'Vuelve a empezar';
+    const blocker = document.getElementById('blocker');
+    if (blocker) blocker.classList.remove('active');
+    
+    const modeStatus = document.getElementById('mode-status');
+    if (modeStatus) modeStatus.innerText = 'Reiniciado';
+    
+    const nextUnlock = document.getElementById('next-unlock');
+    if (nextUnlock) nextUnlock.innerText = 'Vuelve a empezar';
+    
     hideViewCounterButton();
 }
 
-// Detección estricta (sin reinicio por autenticación)
 function setupStrictDetection() {
     document.addEventListener('visibilitychange', () => {
         if (document.hidden && isBlocked && !isPausedForAuth) resetCounter('📱 Cambiaste de pestaña');
@@ -460,10 +427,18 @@ function startApp() {
     }
     
     saveData();
-    document.getElementById('user-name-display').innerText = userName;
-    document.getElementById('garden-title').innerHTML = `🌱 Jardín de ${userName}`;
-    document.getElementById('welcome-screen').style.display = 'none';
-    document.getElementById('main-app').style.display = 'block';
+    
+    const userNameDisplay = document.getElementById('user-name-display');
+    if (userNameDisplay) userNameDisplay.innerText = userName;
+    
+    const gardenTitle = document.getElementById('garden-title');
+    if (gardenTitle) gardenTitle.innerHTML = `🌱 Jardín de ${userName}`;
+    
+    const welcomeScreen = document.getElementById('welcome-screen');
+    if (welcomeScreen) welcomeScreen.style.display = 'none';
+    
+    const mainApp = document.getElementById('main-app');
+    if (mainApp) mainApp.style.display = 'block';
     
     generateTreeMenu();
     renderGarden();
@@ -473,9 +448,9 @@ function startApp() {
 
 function generateTreeMenu() {
     const treeList = document.getElementById('tree-list');
+    if (!treeList) return;
     treeList.innerHTML = '';
     
-    // Agregar árbol de prueba primero (emoji)
     const testDiv = document.createElement('div');
     testDiv.className = `tree-item ${selectedTreeIndex === 'test' ? 'selected' : ''}`;
     testDiv.onclick = () => selectTree('test');
@@ -509,8 +484,11 @@ function selectTree(treeNumber) {
     selectedTreeIndex = treeNumber;
     generateTreeMenu();
     
+    const selectedDisplay = document.getElementById('selected-display');
+    if (!selectedDisplay) return;
+    
     if (treeNumber === 'test') {
-        document.getElementById('selected-display').innerHTML = `
+        selectedDisplay.innerHTML = `
             <div style="font-size: 48px; margin: 10px auto;">🌲</div>
             <p style="font-weight: 600; margin: 12px 0;">Árbol de Prueba</p>
             <p style="color: #ff6f00; font-weight: 500;">💰 1 minuto de enfoque</p>
@@ -519,7 +497,7 @@ function selectTree(treeNumber) {
         `;
     } else {
         const cost = getTreeCost(treeNumber);
-        document.getElementById('selected-display').innerHTML = `
+        selectedDisplay.innerHTML = `
             <img src="trees/${treeNumber}.png" alt="Árbol ${treeNumber}" onerror="this.style.display='none'">
             <p style="font-weight: 600; margin: 12px 0;">Árbol #${treeNumber}</p>
             <p style="color: #ff6f00; font-weight: 500;">💰 ${formatTime(cost)}</p>
@@ -558,18 +536,26 @@ function startFocusForSelectedTree() {
     isPlantingMode = false;
     violationCount = 0;
     
-    document.getElementById('blocker').classList.add('active');
-    document.getElementById('mode-status').innerText = '🔴 ENFOQUE';
-    document.getElementById('next-unlock').innerText = formatTime(focusMinutes);
+    const blocker = document.getElementById('blocker');
+    if (blocker) blocker.classList.add('active');
     
-    if (selectedTreeIndex === 'test') {
-        document.getElementById('blocker-message').innerHTML = `${userName}, cultivando Árbol de Prueba 🌲 (1 minuto)`;
-    } else {
-        document.getElementById('blocker-message').innerHTML = `${userName}, cultivando Árbol #${selectedTreeIndex}`;
+    const modeStatus = document.getElementById('mode-status');
+    if (modeStatus) modeStatus.innerText = '🔴 ENFOQUE';
+    
+    const nextUnlock = document.getElementById('next-unlock');
+    if (nextUnlock) nextUnlock.innerText = formatTime(focusMinutes);
+    
+    const blockerMessage = document.getElementById('blocker-message');
+    if (blockerMessage) {
+        if (selectedTreeIndex === 'test') {
+            blockerMessage.innerHTML = `${userName}, cultivando Árbol de Prueba 🌲 (1 minuto)`;
+        } else {
+            blockerMessage.innerHTML = `${userName}, cultivando Árbol #${selectedTreeIndex}`;
+        }
     }
     
     updateBlockerTimer();
-    showViewCounterButton(); // Mostrar botón para ver contador
+    showViewCounterButton();
     
     focusInterval = setInterval(() => {
         if (currentFocusTime <= 0) {
@@ -585,9 +571,18 @@ function startFocusForSelectedTree() {
 function updateBlockerTimer() {
     const minutes = Math.floor(currentFocusTime / 60);
     const seconds = currentFocusTime % 60;
-    document.getElementById('timer').innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     
-    const totalSeconds = (selectedTreeIndex === 'test' ? 60 : getTreeCost(selectedTreeIndex) * 60);
+    const timerElement = document.getElementById('timer');
+    if (timerElement) {
+        timerElement.innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+    
+    let totalSeconds;
+    if (selectedTreeIndex === 'test') {
+        totalSeconds = 60;
+    } else {
+        totalSeconds = getTreeCost(selectedTreeIndex) * 60;
+    }
     const progress = ((totalSeconds - currentFocusTime) / totalSeconds) * 100;
     const circumference = 2 * Math.PI * 90;
     const offset = circumference - (progress / 100) * circumference;
@@ -613,9 +608,14 @@ function unlockForPlanting() {
     hideViewCounterButton();
     playAlarm();
     
-    document.getElementById('blocker').classList.remove('active');
-    document.getElementById('mode-status').innerText = '🟢 PLANTAR';
-    document.getElementById('next-unlock').innerText = `${Math.floor(UNLOCK_DURATION / 60)} minutos`;
+    const blocker = document.getElementById('blocker');
+    if (blocker) blocker.classList.remove('active');
+    
+    const modeStatus = document.getElementById('mode-status');
+    if (modeStatus) modeStatus.innerText = '🟢 PLANTAR';
+    
+    const nextUnlock = document.getElementById('next-unlock');
+    if (nextUnlock) nextUnlock.innerText = `${Math.floor(UNLOCK_DURATION / 60)} minutos`;
     
     const msg = document.createElement('div');
     if (selectedTreeIndex === 'test') {
@@ -726,17 +726,23 @@ function plantTree(x, y) {
     }
     
     isPlantingMode = false;
-    document.getElementById('mode-status').innerText = '✅ Completado';
-    document.getElementById('next-unlock').innerText = 'Elige otro';
+    
+    const modeStatus = document.getElementById('mode-status');
+    if (modeStatus) modeStatus.innerText = '✅ Completado';
+    
+    const nextUnlock = document.getElementById('next-unlock');
+    if (nextUnlock) nextUnlock.innerText = 'Elige otro';
 }
 
 function renderGarden() {
     const garden = document.getElementById('garden');
+    if (!garden) return;
     garden.innerHTML = '';
     
     plantedTrees.forEach((tree, idx) => {
         const treeDiv = document.createElement('div');
         treeDiv.className = 'tree-planted';
+        treeDiv.style.position = 'absolute';
         treeDiv.style.left = `${tree.x || (idx * 70 % 800)}px`;
         treeDiv.style.top = `${tree.y || (Math.floor(idx / 12) * 70)}px`;
         
@@ -749,7 +755,7 @@ function renderGarden() {
             `;
         } else {
             treeDiv.innerHTML = `
-                <img src="trees/${tree.number}.png" alt="Árbol ${tree.number}" onerror="this.src='https://via.placeholder.com/60?text=🌲'">
+                <img src="trees/${tree.number}.png" alt="Árbol ${tree.number}" style="width:55px; height:55px; object-fit:contain" onerror="this.src='https://via.placeholder.com/55?text=🌲'">
                 <div class="tree-tooltip">
                     Árbol #${tree.number} | ${formatTime(tree.cost)}
                 </div>
@@ -772,14 +778,17 @@ function renderGarden() {
 
 function updateStats() {
     const realTrees = plantedTrees.filter(t => !t.isTest);
-    document.getElementById('tree-count').innerText = realTrees.length;
+    const treeCountSpan = document.getElementById('tree-count');
+    if (treeCountSpan) treeCountSpan.innerText = realTrees.length;
+    
     const totalTime = realTrees.reduce((sum, tree) => sum + (tree.cost || 0), 0);
-    document.getElementById('total-time').innerText = formatTime(totalTime);
+    const totalTimeSpan = document.getElementById('total-time');
+    if (totalTimeSpan) totalTimeSpan.innerText = formatTime(totalTime);
 }
 
 function clearGarden() {
     if (confirm(`⚠️ ${userName}, ¿eliminar TODOS los árboles?`)) {
-        plantedTrees = plantedTrees.filter(t => t.isTest); // Solo mantener árboles de prueba
+        plantedTrees = plantedTrees.filter(t => t.isTest);
         renderGarden();
         saveData();
         updateStats();
@@ -788,6 +797,7 @@ function clearGarden() {
 
 function setupGardenClick() {
     const garden = document.getElementById('garden');
+    if (!garden) return;
     garden.addEventListener('click', (e) => {
         const rect = garden.getBoundingClientRect();
         const x = e.clientX - rect.left;
@@ -796,7 +806,6 @@ function setupGardenClick() {
     });
 }
 
-// Agregar animaciones
 function addAnimations() {
     const style = document.createElement('style');
     style.textContent = `
@@ -833,7 +842,6 @@ function addAnimations() {
     document.head.appendChild(style);
 }
 
-// Inicializar
 function init() {
     loadSavedData();
     setupGardenClick();
@@ -841,13 +849,21 @@ function init() {
     addAnimations();
     initAudio();
     
-    if (userName) {
-        document.getElementById('user-name').value = userName;
-        startApp();
+    const startBtn = document.getElementById('start-btn');
+    if (startBtn) {
+        startBtn.onclick = startApp;
     }
     
-    document.getElementById('start-btn').onclick = startApp;
-    document.getElementById('clear-garden').onclick = clearGarden;
+    const clearGardenBtn = document.getElementById('clear-garden');
+    if (clearGardenBtn) {
+        clearGardenBtn.onclick = clearGarden;
+    }
+    
+    if (userName) {
+        const nameInput = document.getElementById('user-name');
+        if (nameInput) nameInput.value = userName;
+        startApp();
+    }
 }
 
 window.onload = init;
