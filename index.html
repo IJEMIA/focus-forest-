@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Pantalla de bienvenida para preguntar nombre -->
+    <!-- Pantalla de bienvenida -->
     <div id="welcome-screen">
         <div class="welcome-card">
             <div class="welcome-icon">🌳</div>
@@ -18,7 +18,7 @@
         </div>
     </div>
 
-    <!-- Overlay de bloqueo del celular - PANTALLA COMPLETA ESTILO APPLE -->
+    <!-- Overlay de bloqueo -->
     <div id="blocker">
         <div class="blocker-content">
             <div class="lock-icon">🔒</div>
@@ -45,7 +45,7 @@
     <!-- Interfaz principal -->
     <div id="main-app" style="display: none;">
         <div class="container">
-            <!-- Panel izquierdo: Menú de árboles -->
+            <!-- Panel izquierdo -->
             <div class="tree-menu glass">
                 <div class="menu-header">
                     <h2>🌳 Tienda</h2>
@@ -54,7 +54,7 @@
                 <div id="tree-list" class="tree-list"></div>
             </div>
 
-            <!-- Panel central: Jardín -->
+            <!-- Panel central -->
             <div class="garden-container glass">
                 <div class="garden-header">
                     <h3 id="garden-title">🌱 Mi Jardín</h3>
@@ -75,7 +75,7 @@
                 </div>
             </div>
 
-            <!-- Panel derecho: Estado actual -->
+            <!-- Panel derecho -->
             <div class="status-panel glass">
                 <h3>📊 Estado</h3>
                 <div class="status-card">
@@ -108,11 +108,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Elemento de audio para la alarma -->
-    <audio id="alarm-sound" preload="auto">
-        <source src="data:audio/wav;base64,U3RlYWx0aCBzb3VuZCBub3QgYXZhaWxhYmxl" type="audio/wav">
-    </audio>
 
     <script src="script.js"></script>
 </body>
