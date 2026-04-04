@@ -7,6 +7,7 @@ let isBlocked = false;
 let selectedTreeIndex = 1;
 let plantedTrees = [];
 let userName = "";
+let isPlantingMode = false; // Modo para plantar después del bloqueo
 
 // Calcular costo: árbol 1 = 15min, 2 = 30min, 3 = 45min... 15 = 225min
 function getTreeCost(treeNumber) {
@@ -71,7 +72,7 @@ function startApp() {
     selectTree(1);
 }
 
-// Generar menú de árboles
+// Generar menú de árboles (con imágenes pequeñas y sin fondo)
 function generateTreeMenu() {
     const treeList = document.getElementById('tree-list');
     treeList.innerHTML = '';
@@ -83,10 +84,10 @@ function generateTreeMenu() {
         div.onclick = () => selectTree(i);
         
         div.innerHTML = `
-            <img src="trees/${i}.png" alt="Árbol ${i}" onerror="this.src='https://via.placeholder.com/50?text=Tree${i}'">
+            <img src="trees/${i}.png" alt="Árbol ${i}" class="tree-menu-img" onerror="this.src='https://via.placeholder.com/25?text=🌲'">
             <div class="tree-info">
                 <div class="tree-name">🌲 Árbol #${i}</div>
-                <div class="tree-cost">💰 Costo: ${formatTime(cost)}</div>
+                <div class="tree-cost">💰 ${formatTime(cost)}</div>
             </div>
         `;
         treeList.appendChild(div);
@@ -99,34 +100,45 @@ function selectTree(treeNumber) {
     generateTreeMenu();
     const cost = getTreeCost(treeNumber);
     document.getElementById('selected-display').innerHTML = `
-        <img src="trees/${treeNumber}.png" style="width:80px; margin:10px 0" onerror="this.style.display='none'">
+        <img src="trees/${treeNumber}.png" style="width:60px; margin:10px 0; display:block; margin-left:auto; margin-right:auto" onerror="this.style.display='none'">
         <p><strong>Árbol #${treeNumber}</strong></p>
         <p>💰 Costo: ${formatTime(cost)}</p>
-        <p style="font-size:12px; color:#666">Haz clic en el jardín para plantar</p>
-        <p style="font-size:11px; color:#4caf50; margin-top:10px">⏱️ Bloqueo: ${formatTime(cost)}</p>
+        <button id="start-tree-btn" class="btn-primary" style="margin-top:15px; width:100%">🌱 Comenzar cuenta regresiva 🌱</button>
+        <p style="font-size:11px; color:#666; margin-top:10px">⚠️ Primero elige el árbol, luego haz clic en el botón</p>
     `;
+    
+    // Agregar evento al botón de comenzar
+    const startBtn = document.getElementById('start-tree-btn');
+    if (startBtn) {
+        startBtn.onclick = () => startFocusForSelectedTree();
+    }
 }
 
-// Iniciar bloqueo
-function startFocus() {
+// Iniciar bloqueo para el árbol seleccionado
+function startFocusForSelectedTree() {
+    if (isBlocked) {
+        alert(`🔒 ${userName}, ya estás en modo enfoque. Espera a que termine.`);
+        return;
+    }
+    
     if (focusInterval) clearInterval(focusInterval);
-    if (isBlocked) return;
     
     const focusMinutes = getTreeCost(selectedTreeIndex);
     currentFocusTime = focusMinutes * 60;
     
     isBlocked = true;
+    isPlantingMode = false;
     document.getElementById('blocker').classList.add('active');
-    document.getElementById('mode-status').innerText = 'Bloqueado';
+    document.getElementById('mode-status').innerText = 'Enfoque activo';
     document.getElementById('next-unlock').innerText = formatTime(focusMinutes);
-    document.getElementById('blocker-message').innerHTML = `${userName}, estás cultivando tu concentración 🌱`;
+    document.getElementById('blocker-message').innerHTML = `${userName}, estás cultivando el Árbol #${selectedTreeIndex} 🌱`;
     
     updateBlockerTimer();
     
     focusInterval = setInterval(() => {
         if (currentFocusTime <= 0) {
             clearInterval(focusInterval);
-            unlockPhone();
+            unlockForPlanting();
         } else {
             currentFocusTime--;
             updateBlockerTimer();
@@ -145,67 +157,112 @@ function updateBlockerTimer() {
     document.getElementById('progress-fill').style.width = `${Math.min(100, Math.max(0, progress))}%`;
 }
 
-// Desbloquear celular
-function unlockPhone() {
+// Desbloquear para plantar (después de la cuenta regresiva)
+function unlockForPlanting() {
     if (!isBlocked) return;
     
     clearInterval(focusInterval);
     isBlocked = false;
+    isPlantingMode = true;
     document.getElementById('blocker').classList.remove('active');
-    document.getElementById('mode-status').innerText = 'Libre (plantando)';
-    document.getElementById('next-unlock').innerText = 'Ahora';
+    document.getElementById('mode-status').innerText = 'Tiempo de plantar';
+    document.getElementById('next-unlock').innerText = `${UNLOCK_DURATION} segundos`;
     
-    // Auto-bloqueo después de UNLOCK_DURATION segundos
-    setTimeout(() => {
-        if (!isBlocked) {
-            startFocus();
+    // Mostrar mensaje temporal
+    const msg = document.createElement('div');
+    msg.textContent = `🎉 ${userName}, tiempo completado! Planta tu Árbol #${selectedTreeIndex} en el jardín 🎉`;
+    msg.style.position = 'fixed';
+    msg.style.top = '50%';
+    msg.style.left = '50%';
+    msg.style.transform = 'translate(-50%, -50%)';
+    msg.style.background = '#4caf50';
+    msg.style.color = 'white';
+    msg.style.padding = '20px';
+    msg.style.borderRadius = '10px';
+    msg.style.zIndex = '10001';
+    msg.style.fontSize = '18px';
+    msg.style.textAlign = 'center';
+    msg.style.boxShadow = '0 5px 20px rgba(0,0,0,0.3)';
+    document.body.appendChild(msg);
+    setTimeout(() => msg.remove(), 3000);
+    
+    // Auto-bloqueo después de UNLOCK_DURATION segundos si no plantó
+    const autoLockTimeout = setTimeout(() => {
+        if (isPlantingMode && !isBlocked) {
+            isPlantingMode = false;
+            const timeoutMsg = document.createElement('div');
+            timeoutMsg.textContent = `⏰ Tiempo agotado, ${userName}. El árbol no fue plantado.`;
+            timeoutMsg.style.position = 'fixed';
+            timeoutMsg.style.bottom = '20px';
+            timeoutMsg.style.right = '20px';
+            timeoutMsg.style.background = '#f44336';
+            timeoutMsg.style.color = 'white';
+            timeoutMsg.style.padding = '10px';
+            timeoutMsg.style.borderRadius = '5px';
+            timeoutMsg.style.zIndex = '9999';
+            document.body.appendChild(timeoutMsg);
+            setTimeout(() => timeoutMsg.remove(), 3000);
         }
     }, UNLOCK_DURATION * 1000);
+    
+    // Guardar timeout para limpiarlo después de plantar
+    window.pendingAutoLock = autoLockTimeout;
 }
 
-// Plantar árbol
+// Plantar árbol (solo durante el modo de plantación)
 function plantTree(x, y) {
     if (isBlocked) {
-        alert(`🔒 ${userName}, el celular está bloqueado. Espera a que termine el tiempo de enfoque.`);
+        alert(`🔒 ${userName}, celular bloqueado. Primero completa la cuenta regresiva.`);
+        return;
+    }
+    
+    if (!isPlantingMode) {
+        alert(`🌱 ${userName}, primero elige un árbol y haz clic en "Comenzar cuenta regresiva".`);
         return;
     }
     
     const costMinutes = getTreeCost(selectedTreeIndex);
     
-    const confirmed = confirm(`🌱 ${userName}, ¿plantar árbol #${selectedTreeIndex}?\n\n💰 Costo: ${formatTime(costMinutes)} de enfoque\n⏱️ Bloqueará tu celular por ${formatTime(costMinutes)}\n\n¿Confirmas?`);
+    const tree = {
+        id: Date.now(),
+        number: selectedTreeIndex,
+        cost: costMinutes,
+        x: x,
+        y: y,
+        plantedAt: new Date().toISOString()
+    };
     
-    if (confirmed) {
-        const tree = {
-            id: Date.now(),
-            number: selectedTreeIndex,
-            cost: costMinutes,
-            x: x,
-            y: y,
-            plantedAt: new Date().toISOString()
-        };
-        
-        plantedTrees.push(tree);
-        renderGarden();
-        saveData();
-        updateStats();
-        
-        // Iniciar bloqueo
-        startFocus();
-        
-        // Feedback personalizado
-        const msg = document.createElement('div');
-        msg.textContent = `✅ ${userName}, plantaste árbol #${selectedTreeIndex}! Bloqueo por ${formatTime(costMinutes)} activado`;
-        msg.style.position = 'fixed';
-        msg.style.bottom = '20px';
-        msg.style.right = '20px';
-        msg.style.background = '#4caf50';
-        msg.style.color = 'white';
-        msg.style.padding = '10px';
-        msg.style.borderRadius = '5px';
-        msg.style.zIndex = '9999';
-        document.body.appendChild(msg);
-        setTimeout(() => msg.remove(), 3000);
+    plantedTrees.push(tree);
+    renderGarden();
+    saveData();
+    updateStats();
+    
+    // Limpiar auto-bloqueo pendiente
+    if (window.pendingAutoLock) {
+        clearTimeout(window.pendingAutoLock);
+        window.pendingAutoLock = null;
     }
+    
+    // Salir del modo plantación
+    isPlantingMode = false;
+    
+    // Feedback
+    const msg = document.createElement('div');
+    msg.textContent = `✅ ¡Árbol #${selectedTreeIndex} plantado, ${userName}! 🌳`;
+    msg.style.position = 'fixed';
+    msg.style.bottom = '20px';
+    msg.style.right = '20px';
+    msg.style.background = '#4caf50';
+    msg.style.color = 'white';
+    msg.style.padding = '10px';
+    msg.style.borderRadius = '5px';
+    msg.style.zIndex = '9999';
+    document.body.appendChild(msg);
+    setTimeout(() => msg.remove(), 3000);
+    
+    // Actualizar estado
+    document.getElementById('mode-status').innerText = 'Completado';
+    document.getElementById('next-unlock').innerText = 'Elige otro árbol';
 }
 
 // Renderizar jardín
@@ -221,7 +278,7 @@ function renderGarden() {
         treeDiv.style.top = `${tree.y || (Math.floor(idx / 12) * 70)}px`;
         
         treeDiv.innerHTML = `
-            <img src="trees/${tree.number}.png" alt="Árbol ${tree.number}" onerror="this.src='https://via.placeholder.com/60?text=🌲'">
+            <img src="trees/${tree.number}.png" alt="Árbol ${tree.number}" style="width:50px; height:50px; object-fit:contain" onerror="this.src='https://via.placeholder.com/50?text=🌲'">
             <div class="tree-tooltip">
                 Árbol #${tree.number} | ${formatTime(tree.cost)}
             </div>
