@@ -118,37 +118,30 @@ function resetCounter(reason) {
 
 // Detectar cambios SOLO cuando el contador está activo
 function setupStrictDetection() {
-    // Detectar cambio de pestaña
     document.addEventListener('visibilitychange', () => {
         if (document.hidden && isBlocked) {
             resetCounter('📱 Cambiaste de pestaña o aplicación');
         }
     });
     
-    // Detectar pérdida de foco de la ventana
     window.addEventListener('blur', () => {
         if (isBlocked) {
             resetCounter('🪟 Saliste de la ventana del navegador');
         }
     });
     
-    // Detectar clics fuera del bloqueador (solo si el contador está activo)
     document.addEventListener('click', (e) => {
         if (isBlocked) {
             const blocker = document.getElementById('blocker');
             const isClickInsideBlocker = blocker && blocker.contains(e.target);
-            
-            // Permitir clics dentro del bloqueador
             if (!isClickInsideBlocker) {
                 resetCounter('👆 Tocaste fuera del contador de enfoque');
             }
         }
     });
     
-    // Detectar teclas (solo durante bloqueo)
     document.addEventListener('keydown', (e) => {
         if (isBlocked) {
-            // Prevenir comportamiento por defecto de algunas teclas
             if (e.key === 'F5' || e.key === 'F12' || 
                 (e.ctrlKey && e.key === 'r') ||
                 (e.ctrlKey && e.key === 'R')) {
@@ -158,33 +151,28 @@ function setupStrictDetection() {
         }
     });
     
-    // Detectar touch fuera del bloqueador
     document.addEventListener('touchstart', (e) => {
         if (isBlocked) {
             const blocker = document.getElementById('blocker');
             const isTouchInsideBlocker = blocker && blocker.contains(e.target);
-            
             if (!isTouchInsideBlocker) {
                 resetCounter('👉 Tocaste fuera de la pantalla de enfoque');
             }
         }
     });
     
-    // Detectar scroll (solo durante bloqueo)
     window.addEventListener('scroll', () => {
         if (isBlocked) {
             resetCounter('📜 Intentaste hacer scroll fuera del contador');
         }
     });
     
-    // Detectar resize de ventana (solo durante bloqueo)
     window.addEventListener('resize', () => {
         if (isBlocked) {
             resetCounter('🖥️ Cambiaste el tamaño de la ventana');
         }
     });
     
-    // Prevenir menú contextual solo durante bloqueo
     document.addEventListener('contextmenu', (e) => {
         if (isBlocked) {
             e.preventDefault();
@@ -192,7 +180,6 @@ function setupStrictDetection() {
         }
     });
     
-    // Detectar herramientas de desarrollador solo durante bloqueo
     document.addEventListener('keydown', (e) => {
         if (isBlocked) {
             if (e.key === 'F12' || 
@@ -240,7 +227,7 @@ function generateTreeMenu() {
         div.onclick = () => selectTree(i);
         
         div.innerHTML = `
-            <img src="trees/${i}.png" alt="Árbol ${i}" onerror="this.src='https://via.placeholder.com/25?text=🌲'">
+            <img src="trees/${i}.png" alt="Árbol ${i}" onerror="this.src='https://via.placeholder.com/30?text=🌲'">
             <div class="tree-info">
                 <div class="tree-name">🌲 Árbol #${i}</div>
                 <div class="tree-cost">💰 ${formatTime(cost)}</div>
@@ -256,7 +243,7 @@ function selectTree(treeNumber) {
     generateTreeMenu();
     const cost = getTreeCost(treeNumber);
     document.getElementById('selected-display').innerHTML = `
-        <img src="trees/${treeNumber}.png" style="width:60px; margin:10px auto; display:block" onerror="this.style.display='none'">
+        <img src="trees/${treeNumber}.png" alt="Árbol ${treeNumber}" onerror="this.style.display='none'">
         <p><strong>Árbol #${treeNumber}</strong></p>
         <p>💰 Costo: ${formatTime(cost)}</p>
         <button id="start-tree-btn" class="btn-primary" style="margin-top:15px; width:100%">🌱 Comenzar cuenta regresiva 🌱</button>
@@ -267,7 +254,13 @@ function selectTree(treeNumber) {
     
     const startBtn = document.getElementById('start-tree-btn');
     if (startBtn) {
-        startBtn.onclick = () => startFocusForSelectedTree();
+        const newStartBtn = startBtn.cloneNode(true);
+        startBtn.parentNode.replaceChild(newStartBtn, startBtn);
+        newStartBtn.onclick = (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            startFocusForSelectedTree();
+        };
     }
 }
 
@@ -444,7 +437,7 @@ function renderGarden() {
         treeDiv.style.top = `${tree.y || (Math.floor(idx / 12) * 70)}px`;
         
         treeDiv.innerHTML = `
-            <img src="trees/${tree.number}.png" alt="Árbol ${tree.number}" onerror="this.src='https://via.placeholder.com/50?text=🌲'">
+            <img src="trees/${tree.number}.png" alt="Árbol ${tree.number}" onerror="this.src='https://via.placeholder.com/55?text=🌲'">
             <div class="tree-tooltip">
                 Árbol #${tree.number} | ${formatTime(tree.cost)}
             </div>
