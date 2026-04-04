@@ -102,20 +102,21 @@ body {
     }
 }
 
-/* Overlay de bloqueo */
+/* Overlay de bloqueo - PANTALLA COMPLETA SIN ESCAPE */
 #blocker {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.95);
-    backdrop-filter: blur(10px);
+    background: #000000;
     z-index: 10000;
     display: none;
     justify-content: center;
     align-items: center;
     color: white;
+    cursor: default;
+    -webkit-tap-highlight-color: transparent;
 }
 
 #blocker.active {
@@ -124,7 +125,27 @@ body {
 
 .blocker-content {
     text-align: center;
+    padding: 20px;
+    max-width: 90%;
+}
+
+.lock-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
     animation: pulse 2s infinite;
+}
+
+.blocker-content h1 {
+    font-size: 28px;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    color: #ffd700;
+}
+
+#blocker-message {
+    font-size: 16px;
+    margin-bottom: 30px;
+    opacity: 0.8;
 }
 
 .timer-display {
@@ -135,6 +156,7 @@ body {
     background: rgba(255,255,255,0.1);
     padding: 20px;
     border-radius: 20px;
+    letter-spacing: 5px;
 }
 
 .progress-bar {
@@ -153,15 +175,21 @@ body {
     transition: width 1s linear;
 }
 
-.hint {
-    margin-top: 20px;
-    color: #ffd700;
-    font-size: 14px;
+.blocker-footer {
+    margin-top: 40px;
+    font-size: 12px;
+    color: #ff9800;
+}
+
+.blocker-footer .small-text {
+    font-size: 10px;
+    color: #f44336;
+    margin-top: 5px;
 }
 
 @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.8; }
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.05); }
 }
 
 /* Menú de árboles */
@@ -205,7 +233,6 @@ body {
     box-shadow: 0 2px 8px rgba(76,175,80,0.3);
 }
 
-/* ESTILO UNIFORME PARA TODOS LOS ÁRBOLES DEL MENÚ */
 .tree-item img {
     width: 30px !important;
     height: 30px !important;
@@ -274,7 +301,6 @@ body {
     gap: 10px;
 }
 
-/* ESTILO UNIFORME PARA TODOS LOS ÁRBOLES DEL JARDÍN */
 .tree-planted {
     position: relative;
     cursor: pointer;
@@ -341,7 +367,6 @@ body {
     color: #666;
 }
 
-/* Árbol en la vista de selección - también uniforme */
 #selected-display img {
     width: 60px !important;
     height: 60px !important;
@@ -390,7 +415,6 @@ button {
     background: #da190b;
 }
 
-/* Quitar fondos de todas las imágenes */
 img {
     background: transparent !important;
 }
@@ -413,5 +437,13 @@ img {
     .tree-planted img {
         width: 45px !important;
         height: 45px !important;
+    }
+    
+    .timer-display {
+        font-size: 48px;
+    }
+    
+    .progress-bar {
+        width: 250px;
     }
 }
