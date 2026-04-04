@@ -8,8 +8,7 @@ let selectedTreeIndex = 1;
 let plantedTrees = [];
 let userName = "";
 let isPlantingMode = false;
-let isTimerPaused = false; // Para saber si el timer está pausado por cambio de pestaña
-let remainingTimeBeforePause = 0; // Tiempo restante antes de pausar
+let violationCount = 0; // Contador de infracciones
 
 // Calcular costo: árbol 1 = 15min, 2 = 30min, 3 = 45min... 15 = 225min
 function getTreeCost(treeNumber) {
@@ -48,131 +47,170 @@ function loadSavedData() {
     }
 }
 
-// Detectar si la pestaña está visible
-function isTabVisible() {
-    return !document.hidden;
-}
-
-// Mostrar advertencia de pausa
-function showPauseWarning() {
-    const warningDiv = document.createElement('div');
-    warningDiv.id = 'pause-warning';
-    warningDiv.innerHTML = `
-        <div style="position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#f44336; color:white; padding:15px 25px; border-radius:10px; z-index:20001; text-align:center; box-shadow:0 5px 20px rgba(0,0,0,0.3); animation:slideDown 0.3s ease;">
-            ⚠️ ¡No salgas de la pestaña! El contador se ha detenido ⚠️
-            <br>
-            <small>Vuelve a esta pestaña para continuar</small>
-        </div>
-    `;
-    document.body.appendChild(warningDiv);
-    setTimeout(() => {
-        const warning = document.getElementById('pause-warning');
-        if (warning) warning.remove();
-    }, 4000);
-}
-
-// Pausar el timer (cuando se cambia de pestaña)
-function pauseTimer() {
-    if (isBlocked && focusInterval && !isTimerPaused) {
-        // Guardar tiempo restante
-        remainingTimeBeforePause = currentFocusTime;
-        
-        // Detener el intervalo
+// REINICIAR CONTADOR COMPLETAMENTE
+function resetCounter(reason) {
+    if (!isBlocked) return;
+    
+    // Incrementar infracciones
+    violationCount++;
+    
+    // Detener timer actual
+    if (focusInterval) {
         clearInterval(focusInterval);
         focusInterval = null;
-        isTimerPaused = true;
-        
-        // Mostrar mensaje en el bloqueador
-        const blockerContent = document.querySelector('.blocker-content');
-        const pauseMsg = document.createElement('div');
-        pauseMsg.id = 'pause-message';
-        pauseMsg.style.cssText = `
-            background: #f44336;
-            padding: 10px;
-            border-radius: 10px;
-            margin-top: 20px;
-            animation: pulse 1s infinite;
-        `;
-        pauseMsg.innerHTML = '⏸️ CONTADOR PAUSADO - VUELVE A LA PESTAÑA ⏸️';
-        
-        // Verificar si ya existe mensaje de pausa
-        if (!document.getElementById('pause-message')) {
-            blockerContent.appendChild(pauseMsg);
-        }
-        
-        showPauseWarning();
     }
+    
+    // Guardar el tiempo que llevaba para el mensaje
+    const elapsedSeconds = (getTreeCost(selectedTreeIndex) * 60) - currentFocusTime;
+    const elapsedMinutes = Math.floor(elapsedSeconds / 60);
+    
+    // Mostrar mensaje de infracción
+    const violationMsg = document.createElement('div');
+    violationMsg.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #f44336;
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        z-index: 20002;
+        text-align: center;
+        box-shadow: 0 5px 30px rgba(0,0,0,0.5);
+        animation: shake 0.5s ease;
+        min-width: 300px;
+    `;
+    violationMsg.innerHTML = `
+        <h2>⚠️ INFACCIÓN ⚠️</h2>
+        <p>${reason}</p>
+        <p>Llevabas ${formatTime(elapsedMinutes)} de enfoque</p>
+        <p>❌ El contador se ha REINICIADO ❌</p>
+        <p>Infracción #${violationCount}</p>
+        <small>Vuelve a comenzar la cuenta regresiva</small>
+    `;
+    document.body.appendChild(violationMsg);
+    
+    // Reproducir sonido de alerta (si se permite)
+    try {
+        const audio = new Audio('data:audio/wav;base64,U3RlYWx0aCBzb3VuZCBub3QgYXZhaWxhYmxl');
+        audio.play().catch(e => console.log('Audio no soportado'));
+    } catch(e) {}
+    
+    setTimeout(() => violationMsg.remove(), 4000);
+    
+    // REINICIAR TODO
+    isBlocked = false;
+    isPlantingMode = false;
+    currentFocusTime = 0;
+    
+    // Ocultar bloqueador
+    document.getElementById('blocker').classList.remove('active');
+    
+    // Actualizar estado
+    document.getElementById('mode-status').innerText = 'Reiniciado por infracción';
+    document.getElementById('next-unlock').innerText = 'Vuelve a empezar';
+    
+    // Mensaje adicional
+    const footerMsg = document.createElement('div');
+    footerMsg.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        right: 20px;
+        background: #ff9800;
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        text-align: center;
+        z-index: 9999;
+        animation: fadeOut 3s forwards;
+    `;
+    footerMsg.textContent = `❌ ${userName}, no puedes salir del contador. Reinicia desde cero el Árbol #${selectedTreeIndex}. Infracción #${violationCount}`;
+    document.body.appendChild(footerMsg);
+    setTimeout(() => footerMsg.remove(), 3000);
 }
 
-// Reanudar el timer (cuando se vuelve a la pestaña)
-function resumeTimer() {
-    if (isBlocked && isTimerPaused && remainingTimeBeforePause > 0) {
-        // Restaurar tiempo
-        currentFocusTime = remainingTimeBeforePause;
-        remainingTimeBeforePause = 0;
-        isTimerPaused = false;
-        
-        // Eliminar mensaje de pausa
-        const pauseMsg = document.getElementById('pause-message');
-        if (pauseMsg) pauseMsg.remove();
-        
-        // Reiniciar el intervalo
-        if (focusInterval) clearInterval(focusInterval);
-        
-        focusInterval = setInterval(() => {
-            if (currentFocusTime <= 0) {
-                clearInterval(focusInterval);
-                unlockForPlanting();
-            } else {
-                currentFocusTime--;
-                updateBlockerTimer();
-            }
-        }, 1000);
-        
-        // Mostrar mensaje de reanudación
-        const resumeMsg = document.createElement('div');
-        resumeMsg.innerHTML = '▶️ Contador reanudado. No salgas de la pestaña. ▶️';
-        resumeMsg.style.cssText = `
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #4caf50;
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            z-index: 9999;
-            animation: fadeOut 2s forwards;
-        `;
-        document.body.appendChild(resumeMsg);
-        setTimeout(() => resumeMsg.remove(), 2000);
-    }
-}
-
-// Detectar cambios de visibilidad de la pestaña
-function setupVisibilityDetection() {
+// Detectar cambios de visibilidad de la pestaña (REINICIA)
+function setupStrictDetection() {
+    // Detectar cambio de pestaña
     document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-            // Usuario cambió de pestaña o minimizó
-            pauseTimer();
-        } else {
-            // Usuario volvió a la pestaña
-            if (isTimerPaused) {
-                resumeTimer();
+        if (document.hidden && isBlocked) {
+            resetCounter('📱 Cambiaste de pestaña o aplicación');
+        }
+    });
+    
+    // Detectar pérdida de foco de la ventana
+    window.addEventListener('blur', () => {
+        if (isBlocked) {
+            resetCounter('🪟 Saliste de la ventana del navegador');
+        }
+    });
+    
+    // Detectar clics fuera del bloqueador (solo si está activo)
+    document.addEventListener('click', (e) => {
+        if (isBlocked) {
+            const blocker = document.getElementById('blocker');
+            const isClickInsideBlocker = blocker && blocker.contains(e.target);
+            
+            if (!isClickInsideBlocker) {
+                resetCounter('👆 Tocaste fuera del contador de enfoque');
             }
         }
     });
     
-    // Detectar cuando la ventana pierde foco (click fuera)
-    window.addEventListener('blur', () => {
-        if (isBlocked && !isTimerPaused) {
-            pauseTimer();
+    // Detectar teclas (excepto las permitidas)
+    document.addEventListener('keydown', (e) => {
+        if (isBlocked) {
+            // Teclas permitidas: ninguna (todo reinicia)
+            resetCounter(`⌨️ Presionaste la tecla: ${e.key}`);
         }
     });
     
-    // Detectar cuando la ventana recupera foco
-    window.addEventListener('focus', () => {
-        if (isTimerPaused) {
-            resumeTimer();
+    // Detectar touch en móvil fuera del bloqueador
+    document.addEventListener('touchstart', (e) => {
+        if (isBlocked) {
+            const blocker = document.getElementById('blocker');
+            const isTouchInsideBlocker = blocker && blocker.contains(e.target);
+            
+            if (!isTouchInsideBlocker) {
+                resetCounter('👉 Tocaste fuera de la pantalla de enfoque');
+            }
+        }
+    });
+    
+    // Detectar scroll fuera del bloqueador
+    window.addEventListener('scroll', () => {
+        if (isBlocked) {
+            resetCounter('📜 Intentaste hacer scroll fuera del contador');
+        }
+    });
+    
+    // Detectar resize de ventana
+    window.addEventListener('resize', () => {
+        if (isBlocked) {
+            resetCounter('🖥️ Cambiaste el tamaño de la ventana');
+        }
+    });
+    
+    // Detectar si el usuario intenta abrir herramientas de desarrollador
+    document.addEventListener('contextmenu', (e) => {
+        if (isBlocked) {
+            e.preventDefault();
+            resetCounter('🛠️ Intentaste abrir el menú contextual');
+        }
+    });
+    
+    // Detectar F12, Ctrl+Shift+I, Ctrl+U (herramientas dev)
+    document.addEventListener('keydown', (e) => {
+        if (isBlocked) {
+            if (e.key === 'F12' || 
+                (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+                (e.ctrlKey && e.key === 'u') ||
+                (e.ctrlKey && e.key === 'U')) {
+                e.preventDefault();
+                resetCounter('🔧 Intentaste abrir herramientas de desarrollador');
+            }
         }
     });
 }
@@ -203,7 +241,7 @@ function startApp() {
     selectTree(1);
 }
 
-// Generar menú de árboles (con imágenes pequeñas y sin fondo)
+// Generar menú de árboles
 function generateTreeMenu() {
     const treeList = document.getElementById('tree-list');
     treeList.innerHTML = '';
@@ -236,10 +274,9 @@ function selectTree(treeNumber) {
         <p>💰 Costo: ${formatTime(cost)}</p>
         <button id="start-tree-btn" class="btn-primary" style="margin-top:15px; width:100%">🌱 Comenzar cuenta regresiva 🌱</button>
         <p style="font-size:11px; color:#666; margin-top:10px">⚠️ Primero elige el árbol, luego haz clic en el botón</p>
-        <p style="font-size:10px; color:#f44336; margin-top:10px">🔒 NO cierres ni cambies de pestaña o el contador se detendrá</p>
+        <p style="font-size:10px; color:#f44336; margin-top:10px">🔒 NO hagas NADA fuera del contador o se REINICIARÁ</p>
     `;
     
-    // Agregar evento al botón de comenzar
     const startBtn = document.getElementById('start-tree-btn');
     if (startBtn) {
         startBtn.onclick = () => startFocusForSelectedTree();
@@ -249,7 +286,7 @@ function selectTree(treeNumber) {
 // Iniciar bloqueo para el árbol seleccionado
 function startFocusForSelectedTree() {
     if (isBlocked) {
-        alert(`🔒 ${userName}, ya estás en modo enfoque. Espera a que termine.`);
+        alert(`🔒 ${userName}, ya estás en modo enfoque. Termina o reinicia.`);
         return;
     }
     
@@ -260,13 +297,17 @@ function startFocusForSelectedTree() {
     
     isBlocked = true;
     isPlantingMode = false;
-    isTimerPaused = false;
-    remainingTimeBeforePause = 0;
+    violationCount = 0; // Reiniciar contador de infracciones para este intento
     
     document.getElementById('blocker').classList.add('active');
-    document.getElementById('mode-status').innerText = 'Enfoque activo';
+    document.getElementById('mode-status').innerText = 'ENFOQUE ACTIVO';
     document.getElementById('next-unlock').innerText = formatTime(focusMinutes);
-    document.getElementById('blocker-message').innerHTML = `${userName}, estás cultivando el Árbol #${selectedTreeIndex} 🌱<br><small style="color:#ffd700">⚠️ No cierres ni cambies de pestaña</small>`;
+    document.getElementById('blocker-message').innerHTML = `
+        ${userName}, estás cultivando el Árbol #${selectedTreeIndex} 🌱<br>
+        <small style="color:#ffd700">⚠️ NO toques NADA fuera de esta pantalla o se REINICIARÁ ⚠️</small>
+        <br>
+        <small style="color:#ff9800">Infracciones permitidas: 0</small>
+    `;
     
     updateBlockerTimer();
     
@@ -292,68 +333,65 @@ function updateBlockerTimer() {
     document.getElementById('progress-fill').style.width = `${Math.min(100, Math.max(0, progress))}%`;
 }
 
-// Desbloquear para plantar (después de la cuenta regresiva)
+// Desbloquear para plantar
 function unlockForPlanting() {
     if (!isBlocked) return;
     
     clearInterval(focusInterval);
     isBlocked = false;
     isPlantingMode = true;
-    isTimerPaused = false;
     
     document.getElementById('blocker').classList.remove('active');
-    document.getElementById('mode-status').innerText = 'Tiempo de plantar';
+    document.getElementById('mode-status').innerText = 'TIEMPO DE PLANTAR';
     document.getElementById('next-unlock').innerText = `${UNLOCK_DURATION} segundos`;
     
-    // Eliminar mensaje de pausa si existe
-    const pauseMsg = document.getElementById('pause-message');
-    if (pauseMsg) pauseMsg.remove();
-    
-    // Mostrar mensaje temporal
     const msg = document.createElement('div');
-    msg.textContent = `🎉 ${userName}, tiempo completado! Planta tu Árbol #${selectedTreeIndex} en el jardín 🎉`;
-    msg.style.position = 'fixed';
-    msg.style.top = '50%';
-    msg.style.left = '50%';
-    msg.style.transform = 'translate(-50%, -50%)';
-    msg.style.background = '#4caf50';
-    msg.style.color = 'white';
-    msg.style.padding = '20px';
-    msg.style.borderRadius = '10px';
-    msg.style.zIndex = '10001';
-    msg.style.fontSize = '18px';
-    msg.style.textAlign = 'center';
-    msg.style.boxShadow = '0 5px 20px rgba(0,0,0,0.3)';
+    msg.textContent = `🎉 ${userName}, ¡COMPLETASTE EL ENFOQUE! Planta tu Árbol #${selectedTreeIndex} 🎉`;
+    msg.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #4caf50;
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        z-index: 10001;
+        font-size: 18px;
+        text-align: center;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        animation: bounce 0.5s ease;
+    `;
     document.body.appendChild(msg);
     setTimeout(() => msg.remove(), 3000);
     
-    // Auto-bloqueo después de UNLOCK_DURATION segundos si no plantó
     const autoLockTimeout = setTimeout(() => {
         if (isPlantingMode && !isBlocked) {
             isPlantingMode = false;
             const timeoutMsg = document.createElement('div');
             timeoutMsg.textContent = `⏰ Tiempo agotado, ${userName}. El árbol no fue plantado.`;
-            timeoutMsg.style.position = 'fixed';
-            timeoutMsg.style.bottom = '20px';
-            timeoutMsg.style.right = '20px';
-            timeoutMsg.style.background = '#f44336';
-            timeoutMsg.style.color = 'white';
-            timeoutMsg.style.padding = '10px';
-            timeoutMsg.style.borderRadius = '5px';
-            timeoutMsg.style.zIndex = '9999';
+            timeoutMsg.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: #f44336;
+                color: white;
+                padding: 10px;
+                border-radius: 5px;
+                z-index: 9999;
+            `;
             document.body.appendChild(timeoutMsg);
             setTimeout(() => timeoutMsg.remove(), 3000);
         }
     }, UNLOCK_DURATION * 1000);
     
-    // Guardar timeout para limpiarlo después de plantar
     window.pendingAutoLock = autoLockTimeout;
 }
 
-// Plantar árbol (solo durante el modo de plantación)
+// Plantar árbol
 function plantTree(x, y) {
     if (isBlocked) {
-        alert(`🔒 ${userName}, celular bloqueado. Primero completa la cuenta regresiva.`);
+        alert(`🔒 ${userName}, celular bloqueado. Completa la cuenta regresiva primero.`);
         return;
     }
     
@@ -378,30 +416,29 @@ function plantTree(x, y) {
     saveData();
     updateStats();
     
-    // Limpiar auto-bloqueo pendiente
     if (window.pendingAutoLock) {
         clearTimeout(window.pendingAutoLock);
         window.pendingAutoLock = null;
     }
     
-    // Salir del modo plantación
     isPlantingMode = false;
     
-    // Feedback
     const msg = document.createElement('div');
-    msg.textContent = `✅ ¡Árbol #${selectedTreeIndex} plantado, ${userName}! 🌳`;
-    msg.style.position = 'fixed';
-    msg.style.bottom = '20px';
-    msg.style.right = '20px';
-    msg.style.background = '#4caf50';
-    msg.style.color = 'white';
-    msg.style.padding = '10px';
-    msg.style.borderRadius = '5px';
-    msg.style.zIndex = '9999';
+    msg.textContent = `✅ ¡Árbol #${selectedTreeIndex} plantado, ${userName}! 🌳 Sin infracciones!`;
+    msg.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #4caf50;
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        z-index: 9999;
+        animation: fadeOut 3s forwards;
+    `;
     document.body.appendChild(msg);
     setTimeout(() => msg.remove(), 3000);
     
-    // Actualizar estado
     document.getElementById('mode-status').innerText = 'Completado';
     document.getElementById('next-unlock').innerText = 'Elige otro árbol';
 }
@@ -439,16 +476,14 @@ function renderGarden() {
     });
 }
 
-// Actualizar estadísticas
 function updateStats() {
     document.getElementById('tree-count').innerText = plantedTrees.length;
     const totalTime = plantedTrees.reduce((sum, tree) => sum + tree.cost, 0);
     document.getElementById('total-time').innerText = formatTime(totalTime);
 }
 
-// Limpiar jardín
 function clearGarden() {
-    if (confirm(`⚠️ ${userName}, ¿eliminar TODOS tus árboles? Esta acción no se puede deshacer.`)) {
+    if (confirm(`⚠️ ${userName}, ¿eliminar TODOS tus árboles?`)) {
         plantedTrees = [];
         renderGarden();
         saveData();
@@ -456,7 +491,6 @@ function clearGarden() {
     }
 }
 
-// Configurar clic en jardín
 function setupGardenClick() {
     const garden = document.getElementById('garden');
     garden.addEventListener('click', (e) => {
@@ -467,13 +501,42 @@ function setupGardenClick() {
     });
 }
 
+// Agregar animaciones
+function addAnimations() {
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes shake {
+            0%, 100% { transform: translate(-50%, -50%) translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translate(-50%, -50%) translateX(-10px); }
+            20%, 40%, 60%, 80% { transform: translate(-50%, -50%) translateX(10px); }
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+        }
+        
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; visibility: hidden; }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
 // Inicializar
 function init() {
     loadSavedData();
     setupGardenClick();
-    setupVisibilityDetection(); // Activar detección de cambios de pestaña
+    setupStrictDetection(); // DETECCIÓN ESTRICTA QUE REINICIA
+    addAnimations();
     
-    // Si ya había nombre, mostrar directamente
     if (userName) {
         document.getElementById('user-name').value = userName;
         startApp();
@@ -483,27 +546,4 @@ function init() {
     document.getElementById('clear-garden').onclick = clearGarden;
 }
 
-// Agregar animaciones CSS adicionales
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideDown {
-        from {
-            opacity: 0;
-            transform: translateX(-50%) translateY(-20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-    }
-    
-    @keyframes fadeOut {
-        0% { opacity: 1; }
-        70% { opacity: 1; }
-        100% { opacity: 0; visibility: hidden; }
-    }
-`;
-document.head.appendChild(style);
-
-// Iniciar
 window.onload = init;
