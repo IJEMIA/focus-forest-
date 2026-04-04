@@ -356,15 +356,16 @@ body {
 .entity {
     position: absolute;
     cursor: pointer;
-    transition: all 0.2s ease;
-    width: 30px;
-    height: 30px;
+    transition: all 0.3s ease;
+    width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
     transform: translate(-50%, -50%);
     pointer-events: auto;
-    font-size: 22px;
+    font-size: 28px;
+    filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.2));
 }
 
 .entity:active {
@@ -542,4 +543,4 @@ button:active {
     .tree-menu { flex: 1; min-width: 260px; max-width: 300px; }
     .garden-container { flex: 2; min-width: 450px; }
     .status-panel { flex: 1; min-width: 250px; max-width: 280px; }
-} 
+}
