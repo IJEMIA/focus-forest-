@@ -1,6 +1,6 @@
 // Configuración
 const TREES_COUNT = 15;
-const UNLOCK_DURATION = 300;
+const UNLOCK_DURATION = 300; // 5 minutos para plantar
 
 let currentFocusTime = 0;
 let focusInterval = null;
@@ -9,6 +9,7 @@ let selectedTreeIndex = 1;
 let plantedTrees = [];
 let userName = "";
 let isPlantingMode = false;
+let wasScreenLocked = false; // Para detectar bloqueo físico
 
 // Calcular costo
 function getTreeCost(treeNumber) {
@@ -172,7 +173,7 @@ function plantTestTree(x, y) {
     }, 5 * 60 * 1000);
 }
 
-// Reiniciar contador
+// Reiniciar contador (solo para cambios de pestaña)
 function resetCounter(reason) {
     if (!isBlocked) return;
     if (focusInterval) clearInterval(focusInterval);
@@ -182,24 +183,55 @@ function resetCounter(reason) {
     document.getElementById('blocker').classList.remove('active');
     document.getElementById('mode-status').innerText = 'Libre';
     hideViewCounterButton();
+    
+    const msg = document.createElement('div');
+    msg.textContent = `⚠️ ${reason} - Contador reiniciado`;
+    msg.style.cssText = `position:fixed; bottom:20px; left:20px; background:#f44336; color:white; padding:12px 20px; border-radius:30px; z-index:9999;`;
+    document.body.appendChild(msg);
+    setTimeout(() => msg.remove(), 3000);
 }
 
-// Detectar cambios
+// Detectar cambios - DISTINGUIENDO BLOQUEO FÍSICO
 function setupDetection() {
+    // Detectar cuando la página se vuelve invisible (cambio de pestaña o bloqueo)
     document.addEventListener('visibilitychange', () => {
-        if (document.hidden && isBlocked) resetCounter('Cambiaste de pestaña');
+        if (document.hidden) {
+            // La pantalla se ocultó (pestaña cambiada O teléfono bloqueado)
+            wasScreenLocked = true;
+        } else {
+            // La pantalla se mostró nuevamente
+            if (wasScreenLocked && isBlocked) {
+                // Si fue bloqueo físico, NO reiniciamos
+                console.log("Teléfono desbloqueado - Contador continúa");
+                wasScreenLocked = false;
+            }
+        }
     });
+    
+    // Detectar pérdida de foco (cambio de aplicación)
+    let lostFocusTime = 0;
     window.addEventListener('blur', () => {
-        if (isBlocked) resetCounter('Saliste de la ventana');
+        if (isBlocked) {
+            lostFocusTime = Date.now();
+        }
+    });
+    
+    window.addEventListener('focus', () => {
+        if (isBlocked && lostFocusTime > 0) {
+            const timeAway = Date.now() - lostFocusTime;
+            // Si estuvo fuera menos de 2 segundos, probable fue bloqueo rápido
+            if (timeAway > 2000) {
+                // Más de 2 segundos fuera = cambio de app real
+                resetCounter('Cambiaste de aplicación');
+            }
+            lostFocusTime = 0;
+        }
     });
 }
 
 // Iniciar app
 function startApp() {
-    console.log("startApp ejecutado");
     userName = document.getElementById('user-name').value.trim();
-    console.log("Nombre ingresado:", userName);
-    
     if (userName === "") {
         alert("Ingresa tu nombre");
         return;
@@ -481,10 +513,25 @@ function setupGardenClick() {
 
 // Inicializar
 function init() {
-    console.log("Inicializando aplicación...");
     loadSavedData();
     setupGardenClick();
     setupDetection();
     
     const startBtn = document.getElementById('start-btn');
     if (startBtn) {
+        startBtn.onclick = startApp;
+    }
+    
+    const clearGardenBtn = document.getElementById('clear-garden');
+    if (clearGardenBtn) {
+        clearGardenBtn.onclick = clearGarden;
+    }
+    
+    if (userName) {
+        const nameInput = document.getElementById('user-name');
+        if (nameInput) nameInput.value = userName;
+        startApp();
+    }
+}
+
+window.onload = init;
