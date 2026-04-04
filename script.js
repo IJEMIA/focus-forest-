@@ -196,16 +196,21 @@ function setupDetection() {
 
 // Iniciar app
 function startApp() {
+    console.log("startApp ejecutado");
     userName = document.getElementById('user-name').value.trim();
+    console.log("Nombre ingresado:", userName);
+    
     if (userName === "") {
         alert("Ingresa tu nombre");
         return;
     }
+    
     saveData();
     document.getElementById('user-name-display').innerText = userName;
     document.getElementById('garden-title').innerHTML = `🌱 Jardín de ${userName}`;
     document.getElementById('welcome-screen').style.display = 'none';
     document.getElementById('main-app').style.display = 'block';
+    
     generateTreeMenu();
     renderGarden();
     updateStats();
@@ -314,12 +319,21 @@ function startFocus() {
 function updateTimerDisplay() {
     const minutes = Math.floor(currentFocusTime / 60);
     const seconds = currentFocusTime % 60;
-    document.getElementById('timer').innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    const timerElement = document.getElementById('timer');
+    if (timerElement) {
+        timerElement.innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
     
     const totalSeconds = (selectedTreeIndex === 'test' ? 60 : getTreeCost(selectedTreeIndex) * 60);
     const progress = ((totalSeconds - currentFocusTime) / totalSeconds) * 100;
-    document.getElementById('progress-fill').style.width = `${Math.min(100, Math.max(0, progress))}%`;
-    document.getElementById('progress-percentage').innerText = `${Math.round(progress)}%`;
+    const fillElement = document.getElementById('progress-fill');
+    if (fillElement) {
+        fillElement.style.width = `${Math.min(100, Math.max(0, progress))}%`;
+    }
+    const percentageElement = document.getElementById('progress-percentage');
+    if (percentageElement) {
+        percentageElement.innerText = `${Math.round(progress)}%`;
+    }
 }
 
 // Desbloquear para plantar
@@ -434,9 +448,12 @@ function renderGarden() {
 // Actualizar estadísticas
 function updateStats() {
     const realTrees = plantedTrees.filter(t => !t.isTest);
-    document.getElementById('tree-count').innerText = realTrees.length;
+    const treeCountSpan = document.getElementById('tree-count');
+    if (treeCountSpan) treeCountSpan.innerText = realTrees.length;
+    
     const totalTime = realTrees.reduce((sum, tree) => sum + (tree.cost || 0), 0);
-    document.getElementById('total-time').innerText = formatTime(totalTime);
+    const totalTimeSpan = document.getElementById('total-time');
+    if (totalTimeSpan) totalTimeSpan.innerText = formatTime(totalTime);
 }
 
 // Limpiar jardín
@@ -464,17 +481,10 @@ function setupGardenClick() {
 
 // Inicializar
 function init() {
+    console.log("Inicializando aplicación...");
     loadSavedData();
     setupGardenClick();
     setupDetection();
     
-    if (userName) {
-        document.getElementById('user-name').value = userName;
-        startApp();
-    }
-    
-    document.getElementById('start-btn').onclick = startApp;
-    document.getElementById('clear-garden').onclick = clearGarden;
-}
-
-window.onload = init;
+    const startBtn = document.getElementById('start-btn');
+    if (startBtn) {
