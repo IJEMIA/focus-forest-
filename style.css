@@ -28,7 +28,6 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-/* Pantalla de bienvenida */
 #welcome-screen {
     position: fixed;
     top: 0;
@@ -102,7 +101,6 @@ body {
     cursor: pointer;
 }
 
-/* Overlay de bloqueo */
 #blocker {
     position: fixed;
     top: 0;
@@ -209,20 +207,41 @@ body {
     50% { opacity: 0.7; transform: scale(1.05); }
 }
 
-/* Menú de árboles */
 .tree-menu {
     padding: 16px;
 }
 
-.menu-header h2 {
-    font-size: 20px;
-    font-weight: 600;
-    margin-bottom: 12px;
-    padding-bottom: 8px;
+.menu-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
     border-bottom: 1px solid rgba(0,0,0,0.1);
+    padding-bottom: 10px;
 }
 
-.tree-list {
+.tab-btn {
+    flex: 1;
+    padding: 8px;
+    background: none;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 20px;
+    transition: all 0.2s;
+}
+
+.tab-btn.active {
+    background: #4caf50;
+    color: white;
+}
+
+.tab-btn:not(.active) {
+    background: rgba(0,0,0,0.05);
+    color: #666;
+}
+
+.item-list {
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -230,7 +249,7 @@ body {
     overflow-y: auto;
 }
 
-.tree-item {
+.item-card {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -242,37 +261,36 @@ body {
     border: 1px solid rgba(0,0,0,0.05);
 }
 
-.tree-item:active {
+.item-card:active {
     transform: scale(0.98);
 }
 
-.tree-item.selected {
+.item-card.selected {
     border-color: #4caf50;
     background: #c8e6c9;
 }
 
-.tree-item .tree-emoji {
-    font-size: 24px;
-    width: 32px;
+.item-emoji {
+    font-size: 28px;
+    width: 40px;
     text-align: center;
 }
 
-.tree-info {
+.item-info {
     flex: 1;
 }
 
-.tree-name {
+.item-name {
     font-weight: 600;
     font-size: 13px;
 }
 
-.tree-cost {
+.item-cost {
     font-size: 11px;
     color: #ff6f00;
     margin-top: 2px;
 }
 
-/* Jardín */
 .garden-container {
     padding: 16px;
     position: relative;
@@ -294,24 +312,24 @@ body {
 
 .stats {
     display: flex;
-    gap: 12px;
+    gap: 10px;
 }
 
 .stat-card {
     background: white;
-    padding: 6px 12px;
+    padding: 4px 10px;
     border-radius: 20px;
     text-align: center;
 }
 
 .stat-value {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
     color: #4caf50;
 }
 
 .stat-label {
-    font-size: 10px;
+    font-size: 9px;
     color: #666;
 }
 
@@ -324,7 +342,7 @@ body {
     box-shadow: inset 0 0 0 2px rgba(0,0,0,0.1);
 }
 
-.trees-overlay {
+.entities-overlay {
     position: absolute;
     top: 0;
     left: 0;
@@ -335,7 +353,7 @@ body {
     border-radius: 20px;
 }
 
-.tree-planted {
+.entity {
     position: absolute;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -349,11 +367,11 @@ body {
     font-size: 22px;
 }
 
-.tree-planted:active {
+.entity:active {
     transform: translate(-50%, -50%) scale(1.1);
 }
 
-.tree-planted .tree-tooltip {
+.entity .entity-tooltip {
     position: absolute;
     bottom: 100%;
     left: 50%;
@@ -369,11 +387,10 @@ body {
     pointer-events: none;
 }
 
-.tree-planted:hover .tree-tooltip {
+.entity:hover .entity-tooltip {
     display: block;
 }
 
-/* Panel de estado */
 .status-panel {
     padding: 16px;
 }
@@ -430,12 +447,11 @@ body {
     text-align: center;
 }
 
-.selected-card .tree-emoji {
+.selected-card .item-emoji {
     font-size: 40px;
     margin: 6px auto;
 }
 
-/* Botones */
 .garden-controls {
     margin-top: 16px;
     display: flex;
@@ -471,7 +487,7 @@ body {
 
 .btn-small {
     padding: 6px 12px;
-    font-size: 12px;
+    font-size: 11px;
     background: #4caf50;
     color: white;
     border: none;
@@ -508,19 +524,10 @@ button:active {
     color: white;
 }
 
-/* Animaciones */
 @keyframes bounceIn {
-    0% {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(0.3);
-    }
-    50% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1.05);
-    }
-    100% {
-        transform: translate(-50%, -50%) scale(1);
-    }
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+    100% { transform: translate(-50%, -50%) scale(1); }
 }
 
 @keyframes fadeOut {
@@ -529,31 +536,10 @@ button:active {
     100% { opacity: 0; visibility: hidden; }
 }
 
-/* Desktop */
 @media (min-width: 900px) {
-    body {
-        padding: 20px;
-    }
-    
-    .container {
-        flex-direction: row;
-        flex-wrap: wrap;
-    }
-    
-    .tree-menu {
-        flex: 1;
-        min-width: 260px;
-        max-width: 300px;
-    }
-    
-    .garden-container {
-        flex: 2;
-        min-width: 450px;
-    }
-    
-    .status-panel {
-        flex: 1;
-        min-width: 250px;
-        max-width: 280px;
-    }
+    body { padding: 20px; }
+    .container { flex-direction: row; flex-wrap: wrap; }
+    .tree-menu { flex: 1; min-width: 260px; max-width: 300px; }
+    .garden-container { flex: 2; min-width: 450px; }
+    .status-panel { flex: 1; min-width: 250px; max-width: 280px; }
 }
