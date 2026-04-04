@@ -251,10 +251,10 @@ body {
     background: #c8e6c9;
 }
 
-.tree-item img {
-    width: 24px;
-    height: 24px;
-    object-fit: contain;
+.tree-item .tree-emoji {
+    font-size: 24px;
+    width: 32px;
+    text-align: center;
 }
 
 .tree-info {
@@ -275,6 +275,7 @@ body {
 /* Jardín */
 .garden-container {
     padding: 16px;
+    position: relative;
 }
 
 .garden-header {
@@ -314,21 +315,24 @@ body {
     color: #666;
 }
 
-.garden {
-    background: #8b5a2b;
-    background-image: linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px);
-    background-size: 30px 30px;
-    min-height: 400px;
+.garden-canvas {
+    display: block;
+    width: 100%;
+    height: auto;
     border-radius: 20px;
-    position: relative;
-    overflow: auto;
     cursor: crosshair;
+    box-shadow: inset 0 0 0 2px rgba(0,0,0,0.1);
 }
 
-@media (min-width: 768px) {
-    .garden {
-        min-height: 500px;
-    }
+.trees-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    overflow: hidden;
+    border-radius: 20px;
 }
 
 .tree-planted {
@@ -341,18 +345,12 @@ body {
     align-items: center;
     justify-content: center;
     transform: translate(-50%, -50%);
+    pointer-events: auto;
+    font-size: 22px;
 }
 
 .tree-planted:active {
     transform: translate(-50%, -50%) scale(1.1);
-}
-
-.tree-planted img {
-    width: 24px;
-    height: 24px;
-    object-fit: contain;
-    pointer-events: none;
-    filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.3));
 }
 
 .tree-planted .tree-tooltip {
@@ -432,10 +430,8 @@ body {
     text-align: center;
 }
 
-.selected-card img {
-    width: 40px;
-    height: 40px;
-    object-fit: contain;
+.selected-card .tree-emoji {
+    font-size: 40px;
     margin: 6px auto;
 }
 
@@ -446,6 +442,7 @@ body {
     gap: 10px;
     flex-wrap: wrap;
     align-items: center;
+    justify-content: center;
 }
 
 .color-picker-container {
@@ -463,9 +460,9 @@ body {
     font-weight: 500;
 }
 
-#grid-color-picker {
-    width: 40px;
-    height: 40px;
+#brush-color {
+    width: 36px;
+    height: 36px;
     border: 2px solid #ddd;
     border-radius: 50%;
     cursor: pointer;
@@ -551,7 +548,7 @@ button:active {
     
     .garden-container {
         flex: 2;
-        min-width: 400px;
+        min-width: 450px;
     }
     
     .status-panel {
