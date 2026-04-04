@@ -43,12 +43,14 @@
     <!-- Interfaz principal -->
     <div id="main-app" style="display: none;">
         <div class="container">
-            <!-- Panel izquierdo: Menú de árboles -->
+            <!-- Panel izquierdo: Pestañas Árboles / Animales -->
             <div class="tree-menu glass">
-                <div class="menu-header">
-                    <h2>🌳 Tienda de Árboles</h2>
+                <div class="menu-tabs">
+                    <button id="tab-trees" class="tab-btn active">🌳 Árboles</button>
+                    <button id="tab-animals" class="tab-btn">🐾 Animales</button>
                 </div>
-                <div id="tree-list" class="tree-list"></div>
+                <div id="tree-list" class="item-list"></div>
+                <div id="animal-list" class="item-list" style="display: none;"></div>
             </div>
 
             <!-- Panel central: Jardín -->
@@ -61,13 +63,17 @@
                             <span class="stat-label">Árboles</span>
                         </div>
                         <div class="stat-card">
+                            <span class="stat-value" id="animal-count">0</span>
+                            <span class="stat-label">Animales</span>
+                        </div>
+                        <div class="stat-card">
                             <span class="stat-value" id="total-time">0</span>
                             <span class="stat-label">Minutos</span>
                         </div>
                     </div>
                 </div>
                 <canvas id="garden-canvas" class="garden-canvas"></canvas>
-                <div id="trees-overlay" class="trees-overlay"></div>
+                <div id="entities-overlay" class="entities-overlay"></div>
                 <div class="garden-controls">
                     <div class="color-picker-container">
                         <label>🎨 Color pincel:</label>
@@ -112,8 +118,8 @@
                         </div>
                     </div>
                 </div>
-                <div id="selected-tree">
-                    <h4>🌲 Selección actual</h4>
+                <div id="selected-entity">
+                    <h4 id="selected-title">🌲 Selección actual</h4>
                     <div id="selected-display" class="selected-card">Ninguno</div>
                 </div>
             </div>
