@@ -84,7 +84,7 @@ function generateTreeMenu() {
         div.onclick = () => selectTree(i);
         
         div.innerHTML = `
-            <img src="trees/${i}.png" alt="Árbol ${i}" class="tree-menu-img" onerror="this.src='https://via.placeholder.com/25?text=🌲'">
+            <img src="trees/${i}.png" alt="Árbol ${i}" onerror="this.src='https://via.placeholder.com/25?text=🌲'">
             <div class="tree-info">
                 <div class="tree-name">🌲 Árbol #${i}</div>
                 <div class="tree-cost">💰 ${formatTime(cost)}</div>
@@ -100,7 +100,7 @@ function selectTree(treeNumber) {
     generateTreeMenu();
     const cost = getTreeCost(treeNumber);
     document.getElementById('selected-display').innerHTML = `
-        <img src="trees/${treeNumber}.png" style="width:60px; margin:10px 0; display:block; margin-left:auto; margin-right:auto" onerror="this.style.display='none'">
+        <img src="trees/${treeNumber}.png" style="width:60px; margin:10px auto; display:block" onerror="this.style.display='none'">
         <p><strong>Árbol #${treeNumber}</strong></p>
         <p>💰 Costo: ${formatTime(cost)}</p>
         <button id="start-tree-btn" class="btn-primary" style="margin-top:15px; width:100%">🌱 Comenzar cuenta regresiva 🌱</button>
@@ -278,7 +278,7 @@ function renderGarden() {
         treeDiv.style.top = `${tree.y || (Math.floor(idx / 12) * 70)}px`;
         
         treeDiv.innerHTML = `
-            <img src="trees/${tree.number}.png" alt="Árbol ${tree.number}" style="width:50px; height:50px; object-fit:contain" onerror="this.src='https://via.placeholder.com/50?text=🌲'">
+            <img src="trees/${tree.number}.png" alt="Árbol ${tree.number}" onerror="this.src='https://via.placeholder.com/50?text=🌲'">
             <div class="tree-tooltip">
                 Árbol #${tree.number} | ${formatTime(tree.cost)}
             </div>
