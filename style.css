@@ -1,5 +1,212 @@
-/* Estilos para árboles del menú - pequeños y sin fondo */
-.tree-item img.tree-menu-img {
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #1a472a 0%, #2d5a3b 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    display: grid;
+    grid-template-columns: 280px 1fr 250px;
+    gap: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Pantalla de bienvenida */
+#welcome-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1a472a 0%, #2d5a3b 100%);
+    z-index: 20000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px);
+}
+
+.welcome-card {
+    background: rgba(255,255,255,0.95);
+    border-radius: 30px;
+    padding: 40px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    animation: fadeInUp 0.5s ease;
+    max-width: 400px;
+    width: 90%;
+}
+
+.welcome-card h1 {
+    color: #2d5a3b;
+    margin-bottom: 15px;
+    font-size: 32px;
+}
+
+.welcome-card p {
+    color: #666;
+    margin-bottom: 25px;
+}
+
+.welcome-card input {
+    width: 100%;
+    padding: 15px;
+    font-size: 18px;
+    border: 2px solid #ddd;
+    border-radius: 50px;
+    margin-bottom: 20px;
+    text-align: center;
+    transition: all 0.3s;
+}
+
+.welcome-card input:focus {
+    outline: none;
+    border-color: #4caf50;
+    box-shadow: 0 0 10px rgba(76,175,80,0.3);
+}
+
+.welcome-card button {
+    width: 100%;
+    padding: 15px;
+    font-size: 18px;
+    background: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.welcome-card button:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(76,175,80,0.4);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Overlay de bloqueo */
+#blocker {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 10000;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    color: white;
+}
+
+#blocker.active {
+    display: flex;
+}
+
+.blocker-content {
+    text-align: center;
+    animation: pulse 2s infinite;
+}
+
+.timer-display {
+    font-size: 72px;
+    font-weight: bold;
+    margin: 30px 0;
+    font-family: monospace;
+    background: rgba(255,255,255,0.1);
+    padding: 20px;
+    border-radius: 20px;
+}
+
+.progress-bar {
+    width: 300px;
+    height: 10px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 5px;
+    margin: 20px auto;
+    overflow: hidden;
+}
+
+#progress-fill {
+    height: 100%;
+    background: #4caf50;
+    width: 0%;
+    transition: width 1s linear;
+}
+
+.hint {
+    margin-top: 20px;
+    color: #ffd700;
+    font-size: 14px;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+/* Menú de árboles */
+.tree-menu {
+    background: rgba(255,255,255,0.95);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    height: fit-content;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.tree-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.tree-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    background: rgba(255,255,255,0.8) !important;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 1px solid #ddd;
+}
+
+.tree-item:hover {
+    transform: translateX(5px);
+    background: #e8e0c8 !important;
+}
+
+.tree-item.selected {
+    border-color: #4caf50;
+    background: #c8e6c9 !important;
+    box-shadow: 0 2px 8px rgba(76,175,80,0.3);
+}
+
+/* Árboles del menú - tamaño reducido al 10% y sin fondo */
+.tree-item img {
     width: 25px !important;
     height: 25px !important;
     object-fit: contain;
@@ -7,32 +214,165 @@
     filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.1));
 }
 
-.tree-item {
-    background: transparent !important;
-    border: 1px solid #ddd;
-    background-color: rgba(255,255,255,0.8) !important;
+.tree-info {
+    flex: 1;
 }
 
-.tree-item.selected {
-    background-color: #c8e6c9 !important;
-    border-color: #4caf50;
+.tree-name {
+    font-weight: bold;
+    font-size: 14px;
 }
 
-/* Jardín - árboles más pequeños */
+.tree-cost {
+    font-size: 12px;
+    color: #ff6f00;
+    font-weight: bold;
+}
+
+/* Jardín */
+.garden-container {
+    background: rgba(255,255,255,0.95);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+}
+
+.garden-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #ddd;
+}
+
+.stats {
+    display: flex;
+    gap: 20px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.garden {
+    background: #8b5a2b;
+    background-image: 
+        linear-gradient(rgba(100, 70, 30, 0.5) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(100, 70, 30, 0.5) 1px, transparent 1px);
+    background-size: 40px 40px;
+    min-height: 500px;
+    border-radius: 10px;
+    position: relative;
+    overflow: auto;
+    cursor: crosshair;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    padding: 20px;
+    gap: 10px;
+}
+
+/* Árboles plantados en el jardín */
+.tree-planted {
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.tree-planted:hover {
+    transform: scale(1.1);
+}
+
 .tree-planted img {
     width: 50px !important;
     height: 50px !important;
     object-fit: contain;
-    background: transparent;
+    background: transparent !important;
     filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.2));
-    transition: transform 0.2s;
 }
 
-.tree-planted:hover img {
-    transform: scale(1.1);
+.tree-planted .tree-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 5px;
+    font-size: 11px;
+    white-space: nowrap;
+    display: none;
+    pointer-events: none;
+}
+
+.tree-planted:hover .tree-tooltip {
+    display: block;
+}
+
+/* Panel de estado */
+.status-panel {
+    background: rgba(255,255,255,0.95);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    height: fit-content;
+}
+
+#selected-display {
+    margin-top: 10px;
+    padding: 15px;
+    background: #f0f0f0;
+    border-radius: 10px;
+    text-align: center;
+    color: #666;
+}
+
+/* Botones */
+.garden-controls {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: #4caf50;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+}
+
+.btn-danger {
+    background: #f44336;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #da190b;
 }
 
 /* Quitar fondos de todas las imágenes */
 img {
     background: transparent !important;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .container {
+        grid-template-columns: 1fr;
+    }
+    
+    .tree-menu, .status-panel {
+        max-height: 300px;
+    }
 }
