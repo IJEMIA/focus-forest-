@@ -1,6 +1,6 @@
 // Configuración
 const TREES_COUNT = 15;
-const UNLOCK_DURATION = 300; // 5 minutos para plantar
+const UNLOCK_DURATION = 1800; // 30 MINUTOS = 1800 segundos para plantar
 
 let currentFocusTime = 0;
 let focusInterval = null;
@@ -9,7 +9,8 @@ let selectedTreeIndex = 1;
 let plantedTrees = [];
 let userName = "";
 let isPlantingMode = false;
-let wasScreenLocked = false; // Para detectar bloqueo físico
+let wasScreenLocked = false;
+let alarmInterval = null; // Para la alarma de 10 repeticiones
 
 // Calcular costo
 function getTreeCost(treeNumber) {
@@ -47,23 +48,103 @@ function loadSavedData() {
     }
 }
 
-// Alarma
-function playAlarm() {
-    try {
-        const context = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = context.createOscillator();
-        const gain = context.createGain();
-        oscillator.connect(gain);
-        gain.connect(context.destination);
-        oscillator.frequency.value = 880;
-        gain.gain.value = 0.3;
-        oscillator.start();
-        gain.gain.exponentialRampToValueAtTime(0.00001, context.currentTime + 2);
-        oscillator.stop(context.currentTime + 2);
-        setTimeout(() => context.close(), 3000);
-    } catch(e) {
-        console.log("Audio no disponible");
+// Alarma que suena 10 veces
+function playAlarmTenTimes() {
+    let count = 0;
+    
+    function beep() {
+        try {
+            const context = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = context.createOscillator();
+            const gain = context.createGain();
+            oscillator.connect(gain);
+            gain.connect(context.destination);
+            oscillator.frequency.value = 880;
+            gain.gain.value = 0.4;
+            oscillator.start();
+            gain.gain.exponentialRampToValueAtTime(0.00001, context.currentTime + 1);
+            oscillator.stop(context.currentTime + 1);
+            setTimeout(() => context.close(), 1500);
+        } catch(e) {
+            console.log("Audio no disponible");
+        }
     }
+    
+    if (alarmInterval) clearInterval(alarmInterval);
+    
+    beep(); // Primera vez inmediata
+    count = 1;
+    
+    alarmInterval = setInterval(() => {
+        if (count < 10) {
+            beep();
+            count++;
+        } else {
+            clearInterval(alarmInterval);
+            alarmInterval = null;
+        }
+    }, 1500);
+}
+
+// Ventana emergente de logro
+function showSuccessPopup() {
+    const popup = document.createElement('div');
+    popup.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: linear-gradient(135deg, #4caf50, #2e7d32);
+        backdrop-filter: blur(20px);
+        color: white;
+        padding: 40px 60px;
+        border-radius: 60px;
+        text-align: center;
+        z-index: 20000;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        animation: bounceIn 0.5s ease;
+        min-width: 400px;
+        border: 2px solid gold;
+    `;
+    popup.innerHTML = `
+        <div style="font-size: 80px; margin-bottom: 20px;">🏆</div>
+        <h1 style="font-size: 48px; margin-bottom: 16px;">¡LO LOGRASTE!</h1>
+        <p style="font-size: 20px; margin-bottom: 16px;">Has completado el tiempo de enfoque</p>
+        <p style="font-size: 16px; opacity: 0.9;">Ahora tienes <strong style="color: #ffd700;">30 minutos</strong> para plantar tu árbol 🌳</p>
+        <button id="close-popup" style="margin-top: 30px; padding: 12px 30px; background: white; color: #4caf50; border: none; border-radius: 40px; font-size: 16px; font-weight: bold; cursor: pointer;">✨ Plantar árbol ✨</button>
+    `;
+    document.body.appendChild(popup);
+    
+    // Añadir animación
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.3);
+            }
+            50% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.05);
+            }
+            70% {
+                transform: translate(-50%, -50%) scale(0.9);
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    document.getElementById('close-popup').onclick = () => {
+        popup.remove();
+    };
+    
+    // Auto-cerrar después de 10 segundos
+    setTimeout(() => {
+        if (popup.parentNode) popup.remove();
+    }, 10000);
 }
 
 // Autenticación
@@ -155,7 +236,7 @@ function plantTestTree(x, y) {
         x: x,
         y: y,
         isTest: true,
-        expiresAt: Date.now() + (5 * 60 * 1000)
+        expiresAt: Date.now() + (30 * 60 * 1000) // 30 minutos
     };
     plantedTrees.push(testTree);
     renderGarden();
@@ -170,13 +251,20 @@ function plantTestTree(x, y) {
             saveData();
             updateStats();
         }
-    }, 5 * 60 * 1000);
+    }, 30 * 60 * 1000);
+    
+    const msg = document.createElement('div');
+    msg.textContent = `🌱 Árbol de prueba plantado! (1 min de enfoque)`;
+    msg.style.cssText = `position:fixed; bottom:20px; right:20px; background:#4caf50; color:white; padding:12px 20px; border-radius:30px; z-index:9999; animation: fadeOut 3s forwards;`;
+    document.body.appendChild(msg);
+    setTimeout(() => msg.remove(), 3000);
 }
 
-// Reiniciar contador (solo para cambios de pestaña)
+// Reiniciar contador
 function resetCounter(reason) {
     if (!isBlocked) return;
     if (focusInterval) clearInterval(focusInterval);
+    if (alarmInterval) clearInterval(alarmInterval);
     isBlocked = false;
     isPlantingMode = false;
     currentFocusTime = 0;
@@ -186,29 +274,24 @@ function resetCounter(reason) {
     
     const msg = document.createElement('div');
     msg.textContent = `⚠️ ${reason} - Contador reiniciado`;
-    msg.style.cssText = `position:fixed; bottom:20px; left:20px; background:#f44336; color:white; padding:12px 20px; border-radius:30px; z-index:9999;`;
+    msg.style.cssText = `position:fixed; bottom:20px; left:20px; background:#f44336; color:white; padding:12px 20px; border-radius:30px; z-index:9999; animation: fadeOut 3s forwards;`;
     document.body.appendChild(msg);
     setTimeout(() => msg.remove(), 3000);
 }
 
-// Detectar cambios - DISTINGUIENDO BLOQUEO FÍSICO
+// Detectar cambios
 function setupDetection() {
-    // Detectar cuando la página se vuelve invisible (cambio de pestaña o bloqueo)
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
-            // La pantalla se ocultó (pestaña cambiada O teléfono bloqueado)
             wasScreenLocked = true;
         } else {
-            // La pantalla se mostró nuevamente
             if (wasScreenLocked && isBlocked) {
-                // Si fue bloqueo físico, NO reiniciamos
                 console.log("Teléfono desbloqueado - Contador continúa");
                 wasScreenLocked = false;
             }
         }
     });
     
-    // Detectar pérdida de foco (cambio de aplicación)
     let lostFocusTime = 0;
     window.addEventListener('blur', () => {
         if (isBlocked) {
@@ -219,9 +302,7 @@ function setupDetection() {
     window.addEventListener('focus', () => {
         if (isBlocked && lostFocusTime > 0) {
             const timeAway = Date.now() - lostFocusTime;
-            // Si estuvo fuera menos de 2 segundos, probable fue bloqueo rápido
             if (timeAway > 2000) {
-                // Más de 2 segundos fuera = cambio de app real
                 resetCounter('Cambiaste de aplicación');
             }
             lostFocusTime = 0;
@@ -368,31 +449,36 @@ function updateTimerDisplay() {
     }
 }
 
-// Desbloquear para plantar
+// Desbloquear para plantar (con alarma de 10 veces y popup)
 function unlockToPlant() {
     if (!isBlocked) return;
     clearInterval(focusInterval);
     isBlocked = false;
     isPlantingMode = true;
     hideViewCounterButton();
-    playAlarm();
+    
+    // ALARMA QUE SUENA 10 VECES
+    playAlarmTenTimes();
+    
+    // VENTANA EMERGENTE DE LOGRO
+    showSuccessPopup();
     
     document.getElementById('blocker').classList.remove('active');
     document.getElementById('mode-status').innerText = '🟢 PLANTAR';
-    document.getElementById('next-unlock').innerText = `5 minutos`;
+    document.getElementById('next-unlock').innerText = `30 minutos`;
     
     const msg = document.createElement('div');
-    msg.innerHTML = `<div style="font-size:48px;">🎉</div><h2>¡Tiempo completado!</h2><p>Tienes 5 minutos para plantar tu árbol</p>`;
-    msg.style.cssText = `position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.9); backdrop-filter:blur(20px); color:white; padding:32px; border-radius:48px; text-align:center; z-index:10001;`;
+    msg.innerHTML = `<div style="font-size:48px;">🎉</div><h2>¡Tiempo completado!</h2><p>Tienes 30 minutos para plantar tu árbol</p>`;
+    msg.style.cssText = `position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.9); backdrop-filter:blur(20px); color:white; padding:32px; border-radius:48px; text-align:center; z-index:10001; animation: bounceIn 0.5s ease;`;
     document.body.appendChild(msg);
-    setTimeout(() => msg.remove(), 5000);
+    setTimeout(() => msg.remove(), 8000);
     
     window.plantTimeout = setTimeout(() => {
         if (isPlantingMode && !isBlocked) {
             isPlantingMode = false;
             const timeoutMsg = document.createElement('div');
-            timeoutMsg.textContent = `⏰ Tiempo agotado, el árbol no fue plantado`;
-            timeoutMsg.style.cssText = `position:fixed; bottom:20px; right:20px; background:#f44336; color:white; padding:12px 20px; border-radius:30px; z-index:9999;`;
+            timeoutMsg.textContent = `⏰ Tiempo agotado (30 min), el árbol no fue plantado`;
+            timeoutMsg.style.cssText = `position:fixed; bottom:20px; right:20px; background:#f44336; color:white; padding:12px 20px; border-radius:30px; z-index:9999; animation: fadeOut 3s forwards;`;
             document.body.appendChild(timeoutMsg);
             setTimeout(() => timeoutMsg.remove(), 3000);
         }
@@ -429,13 +515,14 @@ function plantTree(x, y) {
     }
     
     if (window.plantTimeout) clearTimeout(window.plantTimeout);
+    if (alarmInterval) clearInterval(alarmInterval);
     isPlantingMode = false;
     document.getElementById('mode-status').innerText = '✅ Completado';
     document.getElementById('next-unlock').innerText = 'Elige otro';
     
     const msg = document.createElement('div');
-    msg.textContent = `✅ ¡Árbol plantado, ${userName}!`;
-    msg.style.cssText = `position:fixed; bottom:20px; right:20px; background:#4caf50; color:white; padding:12px 20px; border-radius:30px; z-index:9999;`;
+    msg.textContent = `✅ ¡Árbol plantado, ${userName}! 🌳`;
+    msg.style.cssText = `position:fixed; bottom:20px; right:20px; background:#4caf50; color:white; padding:12px 20px; border-radius:30px; z-index:9999; animation: fadeOut 3s forwards;`;
     document.body.appendChild(msg);
     setTimeout(() => msg.remove(), 3000);
 }
@@ -511,8 +598,38 @@ function setupGardenClick() {
     }
 }
 
+// Añadir animaciones
+function addAnimations() {
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.3);
+            }
+            50% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.05);
+            }
+            70% {
+                transform: translate(-50%, -50%) scale(0.9);
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; visibility: hidden; }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
 // Inicializar
 function init() {
+    addAnimations();
     loadSavedData();
     setupGardenClick();
     setupDetection();
