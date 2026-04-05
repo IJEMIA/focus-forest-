@@ -2,98 +2,136 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#2E7D32">
-    <title>Focus Forest</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Focus Forest - Jardín con bloqueo de celular</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-    <!-- BIENVENIDA -->
-    <div id="welcome-screen" class="screen-layer active">
+    <!-- Pantalla de bienvenida -->
+    <div id="welcome-screen">
         <div class="welcome-card">
             <div class="welcome-icon">🌳</div>
             <h1>Focus Forest</h1>
-            <p>Tu jardín de concentración</p>
-            <input type="text" id="user-name" placeholder="Tu nombre..." maxlength="20" autocomplete="off">
-            <button id="start-btn" class="btn-primary">🌱 Entrar</button>
+            <p>Tu jardín de concentración y recompensa</p>
+            <input type="text" id="user-name" placeholder="Tu nombre" maxlength="30" autocomplete="off">
+            <button id="start-btn" class="btn-primary">🌱 Comenzar mi jardín</button>
+            <p class="cheat-hint">(Modo prueba: escribe el código secreto)</p>
         </div>
     </div>
 
-    <!-- BLOQUEO -->
-    <div id="blocker" class="screen-layer">
+    <!-- Overlay de bloqueo -->
+    <div id="blocker">
         <div class="blocker-content">
-            <div class="lock-icon">🌿</div>
+            <div class="lock-icon">🔒</div>
             <h1>Modo Enfoque</h1>
-            <p id="blocker-message">Preparando...</p>
-            <div class="timer-display"><span id="timer">00:00</span></div>
+            <p id="blocker-message">Estás cultivando tu concentración</p>
+            <div class="timer-display">
+                <span id="timer">00:00</span>
+            </div>
             <div class="progress-bar-container">
-                <div class="progress-bar"><div id="progress-fill"></div></div>
+                <div class="progress-bar">
+                    <div id="progress-fill"></div>
+                </div>
                 <div id="progress-percentage">0%</div>
             </div>
-            <div class="blocker-footer">¡Mantén el enfoque! 💪</div>
+            <div class="blocker-footer">
+                <p>⚠️ No cierres ni cambies de aplicación</p>
+                <p class="small-text">El contador se reiniciará si lo haces</p>
+            </div>
         </div>
     </div>
 
-    <!-- APP PRINCIPAL -->
+    <!-- Interfaz principal -->
     <div id="main-app" style="display: none;">
         <div class="container">
-            <!-- Tienda -->
-            <aside class="tree-menu card">
+            <!-- Panel izquierdo: Tienda -->
+            <div class="tree-menu card">
                 <div class="menu-tabs">
                     <button id="tab-trees" class="tab-btn active">🌳 Árboles</button>
                     <button id="tab-animals" class="tab-btn">🐾 Animales</button>
                 </div>
                 <div id="tree-list" class="item-list"></div>
-                <div id="animal-list" class="item-list hidden"></div>
-            </aside>
+                <div id="animal-list" class="item-list" style="display: none;"></div>
+            </div>
 
-            <!-- Jardín -->
-            <main class="garden-container card">
-                <header class="garden-header">
-                    <h3 id="garden-title">Mi Jardín</h3>
+            <!-- Panel central: Jardín -->
+            <div class="garden-container card">
+                <div class="garden-header">
+                    <h3 id="garden-title">🌱 Mi Jardín</h3>
                     <div class="stats">
-                        <div class="stat-card"><span class="stat-value" id="tree-count">0</span><span class="stat-label">Árboles</span></div>
-                        <div class="stat-card"><span class="stat-value" id="animal-count">0</span><span class="stat-label">Animales</span></div>
-                        <div class="stat-card"><span class="stat-value" id="total-time">0m</span><span class="stat-label">Enfoque</span></div>
+                        <div class="stat-card">
+                            <span class="stat-value" id="tree-count">0</span>
+                            <span class="stat-label">Árboles</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value" id="animal-count">0</span>
+                            <span class="stat-label">Animales</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-value" id="total-time">0</span>
+                            <span class="stat-label">Minutos</span>
+                        </div>
                     </div>
-                </header>
-                <div id="garden-area" class="garden-area">
-                    <canvas id="garden-canvas"></canvas>
+                </div>
+                <div class="garden-area" id="garden-area">
+                    <canvas id="garden-canvas" class="garden-canvas"></canvas>
                     <div id="entities-overlay" class="entities-overlay"></div>
                 </div>
-                <footer class="garden-controls">
+                <div class="garden-controls">
                     <div class="color-picker-container">
-                        <label for="brush-color">🎨</label>
+                        <label>🎨 Pincel:</label>
                         <input type="color" id="brush-color" value="#4caf50">
-                        <button id="toggle-coloring-mode" class="btn-secondary btn-small">Pincel</button>
-                        <button id="reset-all-colors" class="btn-secondary btn-small">🧹</button>
+                        <button id="toggle-coloring-mode" class="btn-secondary btn-small">Modo Coloreo: OFF</button>
+                        <button id="reset-all-colors" class="btn-secondary btn-small">Reset</button>
                     </div>
-                    <button id="clear-garden" class="btn-danger btn-small">🗑️ Limpiar</button>
-                </footer>
-            </main>
+                    <button id="clear-garden" class="btn-danger">🗑️ Limpiar Jardín</button>
+                </div>
+            </div>
 
-            <!-- Estado -->
-            <aside class="status-panel card">
-                <h3>📊 Progreso</h3>
+            <!-- Panel derecho: Estado -->
+            <div class="status-panel card">
+                <h3>📊 Estado del Jardinero</h3>
                 <div class="status-card">
-                    <div class="status-item"><span class="status-icon">👤</span><div><span class="status-label">Jardinero</span><span class="status-value" id="user-name-display">---</span></div></div>
-                    <div class="status-item"><span class="status-icon">⚡</span><div><span class="status-label">Estado</span><span class="status-value" id="mode-status">Libre</span></div></div>
-                    <div class="status-item"><span class="status-icon">⏱️</span><div><span class="status-label">Siguiente</span><span class="status-value" id="next-unlock">---</span></div></div>
-                    <div class="status-item"><span class="status-icon">🛡️</span><div><span class="status-label">Total</span><span class="status-value" id="total-blocked-time">0 min</span></div></div>
+                    <div class="status-item">
+                        <span class="status-icon">👤</span>
+                        <div>
+                            <span class="status-label">Jardinero</span>
+                            <span class="status-value" id="user-name-display">---</span>
+                        </div>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-icon">🟢</span>
+                        <div>
+                            <span class="status-label">Modo</span>
+                            <span class="status-value" id="mode-status">Libre</span>
+                        </div>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-icon">⏰</span>
+                        <div>
+                            <span class="status-label">Para añadir</span>
+                            <span class="status-value" id="next-unlock">---</span>
+                        </div>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-icon">🔒</span>
+                        <div>
+                            <span class="status-label">Enfoque acumulado</span>
+                            <span class="status-value" id="total-blocked-time">0 min</span>
+                        </div>
+                    </div>
                 </div>
                 <div id="selected-entity">
-                    <h4>✨ Selección</h4>
-                    <div id="selected-display" class="selected-card">Cargando...</div>
+                    <h4 id="selected-title">🌲 Selección actual</h4>
+                    <div id="selected-display" class="selected-card">Ninguno</div>
                 </div>
-            </aside>
+            </div>
         </div>
     </div>
 
-    <div id="toast-container"></div>
     <script src="script.js"></script>
 </body>
 </html>
