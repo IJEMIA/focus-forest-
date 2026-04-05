@@ -6,8 +6,8 @@
         UNLOCK_DURATION: 1800,
         CELL_SIZE: 20,
         ANIMAL_MOVE_INTERVAL: 3000,
-        CHEAT_CODE: "409070110", // Código secreto
-        STORAGE_KEY: 'focusForestFinalV1' // Nueva clave para limpieza automática
+        CHEAT_CODE: "409070110",
+        STORAGE_KEY: 'focusForestStableV2' // Nueva clave para evitar conflictos
     };
 
     // --- DATOS ---
@@ -24,15 +24,14 @@
         { id: 't10', name: "🌻 Girasol", rarity: "Raro", cost: 60, emoji: "🌻" },
         { id: 't11', name: "🍊 Naranjo", rarity: "Raro", cost: 70, emoji: "🍊" },
         { id: 't12', name: "🎋 Bambú", rarity: "Raro", cost: 80, emoji: "🎋" },
-        { id: 't13', name: "💧 Sauce Llorón", rarity: "Épico", cost: 100, emoji: "💧" },
+        { id: 't13', name: "💧 Sauce", rarity: "Épico", cost: 100, emoji: "💧" },
         { id: 't14', name: "💎 Cristal", rarity: "Épico", cost: 150, emoji: "💎" },
         { id: 't15', name: "❄️ Escarcha", rarity: "Épico", cost: 180, emoji: "❄️" },
         { id: 't16', name: "🔥 Fénix", rarity: "Épico", cost: 200, emoji: "🔥" },
         { id: 't17', name: "🌙 Lunar", rarity: "Legendario", cost: 250, emoji: "🌙" },
         { id: 't18', name: "🌈 Arcoíris", rarity: "Legendario", cost: 300, emoji: "🌈" },
         { id: 't19', name: "👑 Real", rarity: "Legendario", cost: 400, emoji: "👑" },
-        { id: 't20', name: "🌌 Cosmos", rarity: "Mítico", cost: 500, emoji: "🌌" },
-        { id: 't21', name: "🌍 Mundo", rarity: "Mítico", cost: 800, emoji: "🌍" }
+        { id: 't20', name: "🌌 Cosmos", rarity: "Mítico", cost: 500, emoji: "🌌" }
     ];
 
     const ANIMALS = [
@@ -58,7 +57,7 @@
         { id: 'a20', name: "🦇 Murciélago", rarity: "Mítico", cost: 500, emoji: "🦇" }
     ];
 
-    // --- ESTADO ---
+    // --- ESTADO SEGURO ---
     const state = {
         user: { name: "", blockedSeconds: 0 },
         garden: { trees: [], animals: [], gridColors: [] },
@@ -83,31 +82,34 @@
 
     let canvas, ctx, canvasRect;
 
-    // --- INICIALIZACIÓN ---
+    // --- INICIALIZACIÓN ROBUSTA ---
     document.addEventListener('DOMContentLoaded', () => {
-        console.log("DOM Cargado"); // Debug
-        loadState();
-        initCanvas();
-        bindEvents();
-        
-        // Intentar login automático si hay nombre
-        if (state.user.name) {
-            console.log("Usuario encontrado:", state.user.name);
-            document.getElementById('user-name').value = state.user.name;
-            startApp();
-        } else {
-            console.log("Mostrando bienvenida");
-            showScreen('welcome');
+        try {
+            loadState();
+            initCanvas();
+            bindEvents();
+            
+            // Validación estricta: Solo entrar si hay nombre válido
+            if (state.user.name && typeof state.user.name === 'string' && state.user.name.trim() !== "") {
+                document.getElementById('user-name').value = state.user.name;
+                startApp();
+            } else {
+                // Si no hay nombre válido, SIEMPRE mostrar bienvenida
+                showScreen('welcome');
+            }
+        } catch (error) {
+            console.error("Error crítico al iniciar:", error);
+            localStorage.removeItem(CONFIG.STORAGE_KEY); // Borrar datos corruptos
+            location.reload(); // Recargar
         }
     });
 
     function showScreen(id) {
-        // Ocultar todo
+        // Limpieza de clases y estilos
         document.getElementById('welcome-screen').classList.remove('active');
         document.getElementById('blocker').classList.remove('active');
         document.getElementById('main-app').style.display = 'none';
 
-        // Mostrar actual
         if (id === 'main') {
             document.getElementById('main-app').style.display = 'block';
         } else {
@@ -118,11 +120,9 @@
     function startApp() {
         const nameInput = document.getElementById('user-name');
         const name = nameInput.value.trim();
-        
-        console.log("Intentando entrar con:", name); // Debug
 
         if (!name) {
-            alert("Por favor escribe tu nombre");
+            showScreen('welcome');
             return;
         }
 
@@ -130,19 +130,25 @@
         saveState();
         
         showScreen('main');
-        updateUI();
-        startAnimalLoop();
         
-        // Necesario para que el canvas se dibuje bien al inicio
-        setTimeout(resizeCanvas, 100); 
+        // Forzar repintado tras mostrar pantalla
+        requestAnimationFrame(() => {
+            updateUI();
+            startAnimalLoop();
+            resizeCanvas();
+        });
     }
 
     function updateUI() {
-        document.getElementById('user-name-display').textContent = state.user.name;
-        document.getElementById('garden-title').textContent = `🌿 Jardín de ${state.user.name}`;
-        updateStats();
-        renderMenu();
-        updateSelectedDisplay();
+        try {
+            document.getElementById('user-name-display').textContent = state.user.name;
+            document.getElementById('garden-title').textContent = `🌿 Jardín de ${state.user.name}`;
+            updateStats();
+            renderMenu();
+            updateSelectedDisplay();
+        } catch(e) {
+            console.error("Error actualizando UI", e);
+        }
     }
 
     // --- LÓGICA DE TIEMPO ---
@@ -208,7 +214,6 @@
         updateStats();
     }
 
-    // --- VISIBILIDAD ---
     function handleVisibility() {
         if (document.hidden && state.app.isBlocked) {
             clearInterval(state.app.timerInterval);
@@ -223,7 +228,6 @@
 
     // --- EVENTOS ---
     function bindEvents() {
-        console.log("Bind events"); // Debug
         document.getElementById('start-btn').onclick = startApp;
         document.getElementById('tab-trees').onclick = () => switchTab('tree');
         document.getElementById('tab-animals').onclick = () => switchTab('animal');
@@ -246,12 +250,12 @@
     function initCanvas() {
         canvas = document.getElementById('garden-canvas');
         ctx = canvas.getContext('2d');
-        resizeCanvas();
+        // No redimensionar aquí, esperar a que la pantalla main sea visible
     }
 
     function resizeCanvas() {
         const container = document.getElementById('garden-area');
-        if (!container) return;
+        if (!container || container.clientWidth === 0) return; // Evita errores si está oculto
         
         canvas.width = container.clientWidth;
         canvas.height = container.clientHeight;
@@ -266,18 +270,22 @@
         const cols = Math.ceil(canvasRect.width / CONFIG.CELL_SIZE);
         const rows = Math.ceil(canvasRect.height / CONFIG.CELL_SIZE);
         
-        if (state.garden.gridColors && state.garden.gridColors.length === rows && state.garden.gridColors[0] && state.garden.gridColors[0].length === cols) {
-            return;
+        // Recrear grid si es necesario
+        if (!state.garden.gridColors || state.garden.gridColors.length !== rows || (state.garden.gridColors[0] && state.garden.gridColors[0].length !== cols)) {
+            state.garden.gridColors = [];
+            for (let i = 0; i < rows; i++) state.garden.gridColors.push(new Array(cols).fill("#8b5a2b"));
         }
-        
-        state.garden.gridColors = [];
-        for (let i = 0; i < rows; i++) state.garden.gridColors.push(new Array(cols).fill("#8b5a2b"));
     }
 
     function drawGrid() {
         if (!ctx || canvasRect.width === 0) return;
         const cols = Math.ceil(canvasRect.width / CONFIG.CELL_SIZE);
         const rows = Math.ceil(canvasRect.height / CONFIG.CELL_SIZE);
+        
+        // Fondo base
+        ctx.fillStyle = "#8b5a2b"; 
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
         for (let r = 0; r < rows; r++) {
             for (let c = 0; c < cols; c++) {
                 const color = (state.garden.gridColors[r] && state.garden.gridColors[r][c]) ? state.garden.gridColors[r][c] : "#8b5a2b";
@@ -537,7 +545,6 @@
     }
 
     function handleCheatInput(e) {
-        const val = e.target.value;
         state.app.cheatBuffer += e.data || "";
         if (state.app.cheatBuffer.length > 20) state.app.cheatBuffer = state.app.cheatBuffer.slice(-20);
         
@@ -562,7 +569,9 @@
     window.App = { startFocus };
 
     function saveState() {
-        localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(state));
+        try {
+            localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(state));
+        } catch(e) {}
     }
 
     function loadState() {
@@ -570,11 +579,14 @@
         if (saved) {
             try {
                 const data = JSON.parse(saved);
-                if(data.user) state.user = data.user;
-                if(data.garden) state.garden = data.garden;
-                if(data.app) state.app.cheatMode = data.app.cheatMode || false;
+                // Validación profunda
+                if (data && data.user && typeof data.user.name === 'string') {
+                    state.user = data.user;
+                    state.garden = data.garden || { trees: [], animals: [], gridColors: [] };
+                    state.app.cheatMode = data.app?.cheatMode || false;
+                }
             } catch(e) {
-                console.error("Error loading data, resetting...", e);
+                console.error("Error leyendo datos, iniciando limpio.");
                 localStorage.removeItem(CONFIG.STORAGE_KEY);
             }
         }
