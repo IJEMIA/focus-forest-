@@ -88,6 +88,7 @@ const CHEAT_CODE = "23";
 
 // ============ INICIALIZACIÓN ============
 document.addEventListener('DOMContentLoaded', function() {
+    console.log("App iniciando...");
     loadSavedData();
     initCanvas();
     setupGardenClick();
@@ -286,18 +287,19 @@ function showMessage(text, bgColor = "#4caf50", duration = 1500) {
     setTimeout(() => msg.remove(), duration);
 }
 
+function getCurrentEntity() {
+    if (selectedType === 'tree') return TREES[selectedEntityIndex];
+    if (selectedType === 'animal') return ANIMALS[selectedEntityIndex];
+    return HOUSES[selectedEntityIndex];
+}
+
 function getEntityCost(entity) {
     if (cheatModeActive) return 5 / 60;
     return entity.cost;
 }
 
-function getEntityCostInSeconds(entity) {
-    if (cheatModeActive) return 5;
-    return entity.cost * 60;
-}
-
 function formatTime(minutes) {
-    if (cheatModeActive) return `5s (prueba)`;
+    if (cheatModeActive) return `5s`;
     if (minutes === 1) return '1 min';
     if (minutes < 60) return `${minutes} min`;
     const hours = Math.floor(minutes / 60);
@@ -332,7 +334,6 @@ function loadSavedData() {
         spawnedAnimals = data.spawnedAnimals || [];
         placedHouses = data.placedHouses || [];
         updateStats();
-        updateBlockedTimeStats();
     }
 }
 
@@ -454,7 +455,6 @@ function startApp() {
     generateHouseMenu();
     renderEntities();
     updateStats();
-    updateBlockedTimeStats();
     selectEntity(0, 'tree');
     startAnimalMovement();
     setTimeout(() => resizeCanvas(), 100);
@@ -528,11 +528,7 @@ function updateSelectedDisplay() {
     const selectedDisplay = document.getElementById('selected-display');
     if (!selectedDisplay) return;
     
-    let entity;
-    if (selectedType === 'tree') entity = TREES[selectedEntityIndex];
-    else if (selectedType === 'animal') entity = ANIMALS[selectedEntityIndex];
-    else entity = HOUSES[selectedEntityIndex];
-    
+    const entity = getCurrentEntity();
     const cost = getEntityCost(entity);
     selectedDisplay.innerHTML = `
         <div class="selected-emoji">${entity.emoji}</div>
@@ -542,32 +538,44 @@ function updateSelectedDisplay() {
         </div>
     `;
     const startBtn = document.getElementById('start-entity-btn');
-    if (startBtn) startBtn.onclick = () => startFocus();
+    if (startBtn) {
+        startBtn.onclick = () => startFocus();
+    }
 }
 
-// ============ ENFOQUE ============
+// ============ ENFOQUE (CORREGIDO) ============
 function startFocus() {
-    if (isBlocked) { showMessage("🔒 Ya estás en enfoque", "#f44336"); return; }
+    console.log("startFocus ejecutado");
+    
+    if (isBlocked) { 
+        showMessage("🔒 Ya estás en enfoque", "#f44336"); 
+        return; 
+    }
+    
     if (focusInterval) clearInterval(focusInterval);
     
-    let entity;
-    if (selectedType === 'tree') entity = TREES[selectedEntityIndex];
-    else if (selectedType === 'animal') entity = ANIMALS[selectedEntityIndex];
-    else entity = HOUSES[selectedEntityIndex];
+    const entity = getCurrentEntity();
+    console.log("Entidad seleccionada:", entity);
     
     let focusSeconds = cheatModeActive ? 5 : entity.cost * 60;
+    console.log("Tiempo de enfoque:", focusSeconds, "segundos");
+    
     currentFocusTime = focusSeconds;
     isBlocked = true;
     isPlantingMode = false;
     
-    document.getElementById('blocker').classList.add('active');
+    const blocker = document.getElementById('blocker');
+    blocker.classList.add('active');
+    
+    const nextUnlock = document.getElementById('next-unlock');
+    const blockerMessage = document.getElementById('blocker-message');
     
     if (cheatModeActive) {
-        document.getElementById('next-unlock').innerText = `5 segundos`;
-        document.getElementById('blocker-message').innerHTML = `${userName}, MODO PRUEBA 🎮`;
+        if (nextUnlock) nextUnlock.innerText = `5 segundos`;
+        if (blockerMessage) blockerMessage.innerHTML = `${userName}, MODO PRUEBA 🎮`;
     } else {
-        document.getElementById('next-unlock').innerText = formatTime(entity.cost);
-        document.getElementById('blocker-message').innerHTML = `${userName}, cultivando ${entity.name}`;
+        if (nextUnlock) nextUnlock.innerText = formatTime(entity.cost);
+        if (blockerMessage) blockerMessage.innerHTML = `${userName}, cultivando ${entity.name}`;
     }
     
     updateTimerDisplay();
@@ -596,11 +604,7 @@ function updateTimerDisplay() {
         }
     }
     
-    let entity;
-    if (selectedType === 'tree') entity = TREES[selectedEntityIndex];
-    else if (selectedType === 'animal') entity = ANIMALS[selectedEntityIndex];
-    else entity = HOUSES[selectedEntityIndex];
-    
+    const entity = getCurrentEntity();
     let totalSeconds = cheatModeActive ? 5 : entity.cost * 60;
     const progress = ((totalSeconds - currentFocusTime) / totalSeconds) * 100;
     const fillElement = document.getElementById('progress-fill');
@@ -613,11 +617,7 @@ function unlockToAdd() {
     if (!isBlocked) return;
     clearInterval(focusInterval);
     
-    let entity;
-    if (selectedType === 'tree') entity = TREES[selectedEntityIndex];
-    else if (selectedType === 'animal') entity = ANIMALS[selectedEntityIndex];
-    else entity = HOUSES[selectedEntityIndex];
-    
+    const entity = getCurrentEntity();
     const totalSeconds = cheatModeActive ? 5 : entity.cost * 60;
     addBlockedTime(totalSeconds);
     
@@ -642,10 +642,7 @@ function placeEntity(x, y) {
     if (isBlocked) { showMessage("🔒 Celular bloqueado", "#f44336"); return; }
     if (!isPlantingMode) { showMessage("🌱 Completa un enfoque primero", "#ff9800"); return; }
     
-    let entity;
-    if (selectedType === 'tree') entity = TREES[selectedEntityIndex];
-    else if (selectedType === 'animal') entity = ANIMALS[selectedEntityIndex];
-    else entity = HOUSES[selectedEntityIndex];
+    const entity = getCurrentEntity();
     
     const newEntity = {
         id: Date.now(),
