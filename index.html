@@ -3,27 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="theme-color" content="#2E7D32">
+    <meta name="description" content="Focus Forest - Cultiva tu concentración y jardín">
     <title>Focus Forest - Jardín con bloqueo de celular</title>
+    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <!-- Pantalla de bienvenida -->
-    <div id="welcome-screen">
+    <div id="welcome-screen" class="screen-layer">
         <div class="welcome-card">
             <div class="welcome-icon">🌳</div>
             <h1>Focus Forest</h1>
             <p>Tu jardín de concentración y recompensa</p>
-            <input type="text" id="user-name" placeholder="Tu nombre" maxlength="30" autocomplete="off">
+            <input type="text" id="user-name" placeholder="Tu nombre" maxlength="30" autocomplete="off" aria-label="Ingresa tu nombre">
             <button id="start-btn" class="btn-primary">🌱 Comenzar mi jardín</button>
             <p class="cheat-hint">(Modo prueba: escribe el código secreto)</p>
         </div>
     </div>
 
     <!-- Overlay de bloqueo -->
-    <div id="blocker">
+    <div id="blocker" class="screen-layer">
         <div class="blocker-content">
             <div class="lock-icon">🔒</div>
             <h1>Modo Enfoque</h1>
@@ -45,21 +50,21 @@
     </div>
 
     <!-- Interfaz principal -->
-    <div id="main-app" style="display: none;">
+    <div id="main-app">
         <div class="container">
             <!-- Panel izquierdo: Tienda -->
-            <div class="tree-menu card">
+            <aside class="tree-menu card">
                 <div class="menu-tabs">
                     <button id="tab-trees" class="tab-btn active">🌳 Árboles</button>
                     <button id="tab-animals" class="tab-btn">🐾 Animales</button>
                 </div>
                 <div id="tree-list" class="item-list"></div>
-                <div id="animal-list" class="item-list" style="display: none;"></div>
-            </div>
+                <div id="animal-list" class="item-list hidden"></div>
+            </aside>
 
             <!-- Panel central: Jardín -->
-            <div class="garden-container card">
-                <div class="garden-header">
+            <main class="garden-container card">
+                <header class="garden-header">
                     <h3 id="garden-title">🌱 Mi Jardín</h3>
                     <div class="stats">
                         <div class="stat-card">
@@ -75,24 +80,24 @@
                             <span class="stat-label">Minutos</span>
                         </div>
                     </div>
-                </div>
+                </header>
                 <div class="garden-area" id="garden-area">
                     <canvas id="garden-canvas" class="garden-canvas"></canvas>
                     <div id="entities-overlay" class="entities-overlay"></div>
                 </div>
-                <div class="garden-controls">
+                <footer class="garden-controls">
                     <div class="color-picker-container">
-                        <label>🎨 Pincel:</label>
+                        <label for="brush-color">🎨 Pincel:</label>
                         <input type="color" id="brush-color" value="#4caf50">
                         <button id="toggle-coloring-mode" class="btn-secondary btn-small">Modo Coloreo: OFF</button>
                         <button id="reset-all-colors" class="btn-secondary btn-small">Reset</button>
                     </div>
                     <button id="clear-garden" class="btn-danger">🗑️ Limpiar Jardín</button>
-                </div>
-            </div>
+                </footer>
+            </main>
 
             <!-- Panel derecho: Estado -->
-            <div class="status-panel card">
+            <aside class="status-panel card">
                 <h3>📊 Estado del Jardinero</h3>
                 <div class="status-card">
                     <div class="status-item">
@@ -128,9 +133,12 @@
                     <h4 id="selected-title">🌲 Selección actual</h4>
                     <div id="selected-display" class="selected-card">Ninguno</div>
                 </div>
-            </div>
+            </aside>
         </div>
     </div>
+
+    <!-- Contenedor para notificaciones tipo Toast -->
+    <div id="toast-container"></div>
 
     <script src="script.js"></script>
 </body>
