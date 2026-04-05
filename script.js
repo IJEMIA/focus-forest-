@@ -61,7 +61,7 @@ let rows = 0;
 let gridColors = [];
 let brushColor = "#4caf50";
 
-const CHEAT_CODE = "409070110409070110409070110";
+const CHEAT_CODE = "23"; // NUEVA CONTRASEÑA: 23
 
 // ============ INICIALIZACIÓN ============
 document.addEventListener('DOMContentLoaded', function() {
@@ -313,7 +313,7 @@ function addBlockedTime(seconds) {
     saveData();
 }
 
-// ============ MODO PRUEBA ============
+// ============ MODO PRUEBA CON CONTRASEÑA 23 ============
 function setupCheatCodeDetection() {
     const nameInput = document.getElementById('user-name');
     if (nameInput) {
