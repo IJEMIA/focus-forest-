@@ -537,18 +537,28 @@ function updateSelectedDisplay() {
             <span class="selected-cost">💰 ${formatTime(cost)}</span>
         </div>
     `;
+    
+    // IMPORTANTE: Aquí se asigna el evento al botón
     const startBtn = document.getElementById('start-entity-btn');
     if (startBtn) {
-        startBtn.onclick = () => startFocus();
+        // Remover eventos anteriores para evitar duplicados
+        const newStartBtn = startBtn.cloneNode(true);
+        startBtn.parentNode.replaceChild(newStartBtn, startBtn);
+        newStartBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log("Botón clickeado - Iniciando enfoque");
+            startFocus();
+        };
     }
 }
 
-// ============ ENFOQUE (CORREGIDO) ============
+// ============ ENFOQUE ============
 function startFocus() {
     console.log("startFocus ejecutado");
     
     if (isBlocked) { 
-        showMessage("🔒 Ya estás en enfoque", "#f44336"); 
+        showMessage("🔒 Ya estás en modo enfoque", "#f44336"); 
         return; 
     }
     
@@ -556,6 +566,12 @@ function startFocus() {
     
     const entity = getCurrentEntity();
     console.log("Entidad seleccionada:", entity);
+    
+    if (!entity) {
+        console.error("No hay entidad seleccionada");
+        showMessage("❌ Selecciona un elemento primero", "#f44336");
+        return;
+    }
     
     let focusSeconds = cheatModeActive ? 5 : entity.cost * 60;
     console.log("Tiempo de enfoque:", focusSeconds, "segundos");
@@ -569,13 +585,16 @@ function startFocus() {
     
     const nextUnlock = document.getElementById('next-unlock');
     const blockerMessage = document.getElementById('blocker-message');
+    const modeStatus = document.getElementById('mode-status');
     
     if (cheatModeActive) {
         if (nextUnlock) nextUnlock.innerText = `5 segundos`;
         if (blockerMessage) blockerMessage.innerHTML = `${userName}, MODO PRUEBA 🎮`;
+        if (modeStatus) modeStatus.innerText = '🔴 PRUEBA';
     } else {
         if (nextUnlock) nextUnlock.innerText = formatTime(entity.cost);
         if (blockerMessage) blockerMessage.innerHTML = `${userName}, cultivando ${entity.name}`;
+        if (modeStatus) modeStatus.innerText = '🔴 ENFOQUE';
     }
     
     updateTimerDisplay();
