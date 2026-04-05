@@ -3,7 +3,7 @@ const UNLOCK_DURATION = 1800;
 const CELL_SIZE = 20;
 const ANIMAL_MOVE_INTERVAL = 3000;
 
-// Árboles
+// PLANTAS (20 tipos)
 const TREES = [
     { id: 1, name: "🌲 Pino", rarity: "Común", cost: 5, emoji: "🌲", type: "tree" },
     { id: 2, name: "🌳 Roble", rarity: "Común", cost: 10, emoji: "🌳", type: "tree" },
@@ -15,25 +15,47 @@ const TREES = [
     { id: 8, name: "🌿 Sauce", rarity: "Raro", cost: 55, emoji: "🌿", type: "tree" },
     { id: 9, name: "🍂 Olmo", rarity: "Raro", cost: 65, emoji: "🍂", type: "tree" },
     { id: 10, name: "🌺 Flor de Cerezo", rarity: "Raro", cost: 75, emoji: "🌺", type: "tree" },
-    { id: 11, name: "✨ Árbol Brillante", rarity: "Épico", cost: 100, emoji: "✨", type: "tree" },
-    { id: 12, name: "🔥 Árbol Ígneo", rarity: "Épico", cost: 120, emoji: "🔥", type: "tree" },
-    { id: 13, name: "💎 Árbol Cristal", rarity: "Épico", cost: 150, emoji: "💎", type: "tree" },
-    { id: 14, name: "🌙 Árbol Lunar", rarity: "Legendario", cost: 200, emoji: "🌙", type: "tree" },
-    { id: 15, name: "👑 Árbol Real", rarity: "Legendario", cost: 250, emoji: "👑", type: "tree" }
+    { id: 11, name: "🍄 Seta Mágica", rarity: "Raro", cost: 80, emoji: "🍄", type: "tree" },
+    { id: 12, name: "🌵 Cactus", rarity: "Común", cost: 30, emoji: "🌵", type: "tree" },
+    { id: 13, name: "🪴 Planta Interior", rarity: "Común", cost: 12, emoji: "🪴", type: "tree" },
+    { id: 14, name: "🌻 Girasol", rarity: "Común", cost: 18, emoji: "🌻", type: "tree" },
+    { id: 15, name: "🌿 Helecho", rarity: "Común", cost: 8, emoji: "🌿", type: "tree" },
+    { id: 16, name: "✨ Árbol Brillante", rarity: "Épico", cost: 100, emoji: "✨", type: "tree" },
+    { id: 17, name: "🔥 Árbol Ígneo", rarity: "Épico", cost: 120, emoji: "🔥", type: "tree" },
+    { id: 18, name: "💎 Árbol Cristal", rarity: "Épico", cost: 150, emoji: "💎", type: "tree" },
+    { id: 19, name: "🌙 Árbol Lunar", rarity: "Legendario", cost: 200, emoji: "🌙", type: "tree" },
+    { id: 20, name: "👑 Árbol Real", rarity: "Legendario", cost: 250, emoji: "👑", type: "tree" }
 ];
 
-// Animales
+// ANIMALES (15 tipos)
 const ANIMALS = [
     { id: 1, name: "🐕 Perro", rarity: "Común", cost: 8, emoji: "🐕", type: "animal" },
     { id: 2, name: "🐈 Gato", rarity: "Común", cost: 8, emoji: "🐈", type: "animal" },
     { id: 3, name: "🐇 Conejo", rarity: "Común", cost: 10, emoji: "🐇", type: "animal" },
     { id: 4, name: "🐿️ Ardilla", rarity: "Común", cost: 12, emoji: "🐿️", type: "animal" },
-    { id: 5, name: "🦊 Zorro", rarity: "Raro", cost: 20, emoji: "🦊", type: "animal" },
-    { id: 6, name: "🐺 Lobo", rarity: "Raro", cost: 25, emoji: "🐺", type: "animal" },
-    { id: 7, name: "🦌 Ciervo", rarity: "Raro", cost: 30, emoji: "🦌", type: "animal" },
-    { id: 8, name: "🦚 Pavo Real", rarity: "Épico", cost: 50, emoji: "🦚", type: "animal" },
-    { id: 9, name: "🐉 Dragón", rarity: "Legendario", cost: 100, emoji: "🐉", type: "animal" },
-    { id: 10, name: "🦄 Unicornio", rarity: "Legendario", cost: 150, emoji: "🦄", type: "animal" }
+    { id: 5, name: "🐼 Panda", rarity: "Raro", cost: 30, emoji: "🐼", type: "animal" },
+    { id: 6, name: "🐨 Koala", rarity: "Raro", cost: 28, emoji: "🐨", type: "animal" },
+    { id: 7, name: "🦊 Zorro", rarity: "Raro", cost: 20, emoji: "🦊", type: "animal" },
+    { id: 8, name: "🐺 Lobo", rarity: "Raro", cost: 25, emoji: "🐺", type: "animal" },
+    { id: 9, name: "🦌 Ciervo", rarity: "Raro", cost: 30, emoji: "🦌", type: "animal" },
+    { id: 10, name: "🦁 León", rarity: "Épico", cost: 60, emoji: "🦁", type: "animal" },
+    { id: 11, name: "🐧 Pingüino", rarity: "Épico", cost: 55, emoji: "🐧", type: "animal" },
+    { id: 12, name: "🦚 Pavo Real", rarity: "Épico", cost: 50, emoji: "🦚", type: "animal" },
+    { id: 13, name: "🦝 Mapache", rarity: "Épico", cost: 45, emoji: "🦝", type: "animal" },
+    { id: 14, name: "🐉 Dragón", rarity: "Legendario", cost: 100, emoji: "🐉", type: "animal" },
+    { id: 15, name: "🦄 Unicornio", rarity: "Legendario", cost: 150, emoji: "🦄", type: "animal" }
+];
+
+// CASAS (8 tipos)
+const HOUSES = [
+    { id: 1, name: "🏠 Cabaña", rarity: "Común", cost: 30, emoji: "🏠", type: "house" },
+    { id: 2, name: "🏡 Casa", rarity: "Común", cost: 50, emoji: "🏡", type: "house" },
+    { id: 3, name: "🏘️ Pueblo", rarity: "Raro", cost: 80, emoji: "🏘️", type: "house" },
+    { id: 4, name: "🏰 Castillo", rarity: "Épico", cost: 150, emoji: "🏰", type: "house" },
+    { id: 5, name: "🗿 Templo", rarity: "Épico", cost: 120, emoji: "🗿", type: "house" },
+    { id: 6, name: "⛩️ Santuario", rarity: "Épico", cost: 140, emoji: "⛩️", type: "house" },
+    { id: 7, name: "🏯 Pagoda", rarity: "Legendario", cost: 200, emoji: "🏯", type: "house" },
+    { id: 8, name: "💒 Catedral", rarity: "Legendario", cost: 250, emoji: "💒", type: "house" }
 ];
 
 let currentFocusTime = 0;
@@ -43,6 +65,7 @@ let selectedEntityIndex = 0;
 let selectedType = "tree";
 let plantedTrees = [];
 let spawnedAnimals = [];
+let placedHouses = [];
 let userName = "";
 let isPlantingMode = false;
 let alarmInterval = null;
@@ -61,7 +84,7 @@ let rows = 0;
 let gridColors = [];
 let brushColor = "#4caf50";
 
-const CHEAT_CODE = "23"; // NUEVA CONTRASEÑA: 23
+const CHEAT_CODE = "23";
 
 // ============ INICIALIZACIÓN ============
 document.addEventListener('DOMContentLoaded', function() {
@@ -78,6 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('toggle-coloring-mode').onclick = toggleColoringMode;
     document.getElementById('tab-trees').onclick = () => switchTab('tree');
     document.getElementById('tab-animals').onclick = () => switchTab('animal');
+    document.getElementById('tab-houses').onclick = () => switchTab('house');
     
     if (userName) {
         document.getElementById('user-name').value = userName;
@@ -89,25 +113,36 @@ function switchTab(tab) {
     selectedType = tab;
     const treesTab = document.getElementById('tab-trees');
     const animalsTab = document.getElementById('tab-animals');
+    const housesTab = document.getElementById('tab-houses');
     const treeList = document.getElementById('tree-list');
     const animalList = document.getElementById('animal-list');
+    const houseList = document.getElementById('house-list');
+    
+    treesTab.classList.remove('active');
+    animalsTab.classList.remove('active');
+    housesTab.classList.remove('active');
     
     if (tab === 'tree') {
         treesTab.classList.add('active');
-        animalsTab.classList.remove('active');
-        treeList.style.display = 'flex';
+        treeList.style.display = 'grid';
         animalList.style.display = 'none';
+        houseList.style.display = 'none';
         generateTreeMenu();
         selectEntity(0, 'tree');
-        document.getElementById('selected-title').innerHTML = '🌲 Selección actual';
-    } else {
-        treesTab.classList.remove('active');
+    } else if (tab === 'animal') {
         animalsTab.classList.add('active');
         treeList.style.display = 'none';
-        animalList.style.display = 'flex';
+        animalList.style.display = 'grid';
+        houseList.style.display = 'none';
         generateAnimalMenu();
         selectEntity(0, 'animal');
-        document.getElementById('selected-title').innerHTML = '🐾 Selección actual';
+    } else {
+        housesTab.classList.add('active');
+        treeList.style.display = 'none';
+        animalList.style.display = 'none';
+        houseList.style.display = 'grid';
+        generateHouseMenu();
+        selectEntity(0, 'house');
     }
 }
 
@@ -116,15 +151,13 @@ function toggleColoringMode() {
     const btn = document.getElementById('toggle-coloring-mode');
     if (btn) {
         if (coloringModeActive) {
-            btn.textContent = '🎨 Modo Coloreo: ON';
+            btn.innerHTML = '🎨 ON';
             btn.style.background = '#ff9800';
-            btn.style.color = 'white';
-            showMessage("🎨 Modo coloreo ACTIVADO - Puedes pintar los cuadros", "#ff9800", 1500);
+            showMessage("🎨 Modo coloreo ACTIVADO", "#ff9800", 1000);
         } else {
-            btn.textContent = '🎨 Modo Coloreo: OFF';
-            btn.style.background = '#e5e7eb';
-            btn.style.color = '#1f2937';
-            showMessage("🎨 Modo coloreo DESACTIVADO - Puedes plantar/criar", "#4caf50", 1500);
+            btn.innerHTML = '🎨 OFF';
+            btn.style.background = 'rgba(0,0,0,0.5)';
+            showMessage("🎨 Modo coloreo DESACTIVADO", "#4caf50", 1000);
         }
     }
 }
@@ -152,8 +185,8 @@ function resizeCanvas() {
     const area = document.getElementById('garden-area');
     if (!area) return;
     const containerWidth = area.clientWidth - 4;
-    canvasWidth = Math.max(containerWidth, 400);
-    canvasHeight = canvasWidth * 0.6;
+    canvasWidth = Math.max(containerWidth, 350);
+    canvasHeight = canvasWidth * 0.7;
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
     canvas.style.width = `${canvasWidth}px`;
@@ -199,9 +232,9 @@ function handleCanvasClickAt(x, y) {
             if (isPlantingMode && !isBlocked) {
                 placeEntity(x, y);
             } else if (!isPlantingMode && !isBlocked) {
-                showMessage("🌱 Primero completa un tiempo de enfoque para añadir algo", "#ff9800", 1500);
+                showMessage("🌱 Completa un enfoque para añadir", "#ff9800", 1500);
             } else if (isBlocked) {
-                showMessage("🔒 Celular bloqueado, espera a que termine el enfoque", "#f44336", 1500);
+                showMessage("🔒 Celular bloqueado", "#f44336", 1500);
             }
         }
     }
@@ -233,7 +266,7 @@ function resetAllColors() {
     }
     drawGrid();
     saveGridColors();
-    showMessage("🟫 Todos los cuadros restablecidos a café", "#ff9800");
+    showMessage("🟫 Suelo restablecido", "#ff9800", 1500);
 }
 
 function setupGridControls() {
@@ -245,10 +278,10 @@ function setupGridControls() {
 }
 
 // ============ UTILIDADES ============
-function showMessage(text, bgColor = "#4caf50", duration = 2000) {
+function showMessage(text, bgColor = "#4caf50", duration = 1500) {
     const msg = document.createElement('div');
     msg.textContent = text;
-    msg.style.cssText = `position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:${bgColor}; color:white; padding:10px 20px; border-radius:30px; z-index:9999; font-size:13px; animation:fadeOut ${duration/1000}s forwards; white-space:nowrap;`;
+    msg.style.cssText = `position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:${bgColor}; color:white; padding:8px 16px; border-radius:30px; z-index:9999; font-size:12px; animation:fadeOut ${duration/1000}s forwards; white-space:nowrap;`;
     document.body.appendChild(msg);
     setTimeout(() => msg.remove(), duration);
 }
@@ -284,7 +317,7 @@ function formatSeconds(seconds) {
 
 function saveData() {
     localStorage.setItem('focusForest', JSON.stringify({
-        userName, plantedTrees, spawnedAnimals, cheatModeActive, totalBlockedSeconds
+        userName, plantedTrees, spawnedAnimals, placedHouses, cheatModeActive, totalBlockedSeconds
     }));
 }
 
@@ -297,13 +330,14 @@ function loadSavedData() {
         if (data.totalBlockedSeconds) totalBlockedSeconds = data.totalBlockedSeconds;
         plantedTrees = data.plantedTrees || [];
         spawnedAnimals = data.spawnedAnimals || [];
+        placedHouses = data.placedHouses || [];
         updateStats();
         updateBlockedTimeStats();
     }
 }
 
 function updateBlockedTimeStats() {
-    const span = document.getElementById('total-blocked-time');
+    const span = document.getElementById('total-time');
     if (span) span.innerText = formatSeconds(totalBlockedSeconds);
 }
 
@@ -313,7 +347,7 @@ function addBlockedTime(seconds) {
     saveData();
 }
 
-// ============ MODO PRUEBA CON CONTRASEÑA 23 ============
+// ============ MODO PRUEBA ============
 function setupCheatCodeDetection() {
     const nameInput = document.getElementById('user-name');
     if (nameInput) {
@@ -325,13 +359,14 @@ function setupCheatCodeDetection() {
             }
             if (cheatCodeEntered === CHEAT_CODE && !cheatModeActive) {
                 cheatModeActive = true;
-                showMessage("🎮 MODO PRUEBA ACTIVADO - Todo cuesta 5 segundos", "#ff9800", 3000);
+                showMessage("🎮 MODO PRUEBA ACTIVADO! 5 segundos", "#ff9800", 3000);
                 nameInput.style.borderColor = "#ff9800";
                 nameInput.style.boxShadow = "0 0 0 3px rgba(255,152,0,0.3)";
                 saveData();
                 if (document.getElementById('main-app').style.display === 'block') {
                     if (selectedType === 'tree') generateTreeMenu();
-                    else generateAnimalMenu();
+                    else if (selectedType === 'animal') generateAnimalMenu();
+                    else generateHouseMenu();
                     updateSelectedDisplay();
                     updateStats();
                 }
@@ -353,9 +388,9 @@ function playAlarmTenTimes() {
             oscillator.frequency.value = 880;
             gain.gain.value = 0.4;
             oscillator.start();
-            gain.gain.exponentialRampToValueAtTime(0.00001, context.currentTime + 1);
-            oscillator.stop(context.currentTime + 1);
-            setTimeout(() => context.close(), 1500);
+            gain.gain.exponentialRampToValueAtTime(0.00001, context.currentTime + 0.8);
+            oscillator.stop(context.currentTime + 0.8);
+            setTimeout(() => context.close(), 1000);
         } catch(e) {}
     }
     if (alarmInterval) clearInterval(alarmInterval);
@@ -364,19 +399,19 @@ function playAlarmTenTimes() {
     alarmInterval = setInterval(() => {
         if (count < 10) { beep(); count++; }
         else { clearInterval(alarmInterval); alarmInterval = null; }
-    }, 1500);
+    }, 1000);
 }
 
 function showSuccessPopup() {
     const popup = document.createElement('div');
-    popup.style.cssText = `position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:linear-gradient(135deg,#2E7D32,#1B5E20); color:white; padding:30px 40px; border-radius:50px; text-align:center; z-index:20000; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); animation:bounceIn 0.5s ease; min-width:280px; max-width:90%; border:2px solid #FFD700;`;
-    popup.innerHTML = `<div style="font-size:60px; margin-bottom:12px;">🏆</div><h1 style="font-size:32px; margin-bottom:12px;">¡LO LOGRASTE!</h1><p style="margin-bottom:12px;">Has completado el tiempo de enfoque</p><p>Tienes <strong style="color:#FFD700;">30 minutos</strong> para añadir algo 🌳🐾</p><button id="close-popup" style="margin-top:20px; padding:10px 25px; background:white; color:#2E7D32; border:none; border-radius:40px; font-size:14px; font-weight:bold; cursor:pointer;">✨ Añadir ✨</button>`;
+    popup.style.cssText = `position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:linear-gradient(135deg,#4CAF50,#2E7D32); color:white; padding:24px; border-radius:40px; text-align:center; z-index:20000; box-shadow:0 20px 40px rgba(0,0,0,0.3); animation:bounceIn 0.5s ease; min-width:260px; max-width:85%; border:2px solid #FFD700;`;
+    popup.innerHTML = `<div style="font-size:50px;">🏆</div><h2 style="margin:8px 0;">¡LO LOGRASTE!</h2><p>Completaste el enfoque</p><p>Tienes <strong>30 minutos</strong> para añadir algo</p><button id="close-popup" style="margin-top:16px; padding:8px 20px; background:white; color:#2E7D32; border:none; border-radius:30px; font-weight:bold; cursor:pointer;">✨ Añadir ✨</button>`;
     document.body.appendChild(popup);
     document.getElementById('close-popup').onclick = () => popup.remove();
-    setTimeout(() => popup.remove(), 10000);
+    setTimeout(() => popup.remove(), 8000);
 }
 
-// ============ DETECCIÓN (NO PENALIZA BLOQUEO) ============
+// ============ DETECCIÓN ============
 function setupDetection() {
     let visibilityStart = 0;
     let wasHidden = false;
@@ -388,7 +423,7 @@ function setupDetection() {
         } else if (wasHidden && isBlocked && !isPlantingMode) {
             const hiddenTime = Date.now() - visibilityStart;
             if (hiddenTime > 3000) {
-                resetCounter('Cambiaste de aplicación/pestaña');
+                resetCounter('Cambiaste de aplicación');
             }
             wasHidden = false;
         }
@@ -403,8 +438,7 @@ function resetCounter(reason) {
     isPlantingMode = false;
     currentFocusTime = 0;
     document.getElementById('blocker').classList.remove('active');
-    document.getElementById('mode-status').innerText = 'Libre';
-    showMessage(`⚠️ ${reason} - Contador reiniciado`, "#f44336", 3000);
+    showMessage(`⚠️ ${reason} - Reiniciado`, "#f44336", 2000);
 }
 
 // ============ INICIAR APP ============
@@ -412,12 +446,12 @@ function startApp() {
     userName = document.getElementById('user-name').value.trim();
     if (userName === "") { alert("Ingresa tu nombre"); return; }
     saveData();
-    document.getElementById('user-name-display').innerText = userName;
     document.getElementById('garden-title').innerHTML = cheatModeActive ? `🌱 Jardín de ${userName} 🎮` : `🌱 Jardín de ${userName}`;
     document.getElementById('welcome-screen').style.display = 'none';
     document.getElementById('main-app').style.display = 'block';
     generateTreeMenu();
     generateAnimalMenu();
+    generateHouseMenu();
     renderEntities();
     updateStats();
     updateBlockedTimeStats();
@@ -438,10 +472,8 @@ function generateTreeMenu() {
         div.onclick = () => selectEntity(idx, 'tree');
         div.innerHTML = `
             <div class="item-emoji">${tree.emoji}</div>
-            <div class="item-info">
-                <div class="item-name">${tree.name} <span style="font-size:9px; color:${tree.rarity === 'Común' ? '#4caf50' : tree.rarity === 'Raro' ? '#2196f3' : tree.rarity === 'Épico' ? '#9c27b0' : '#ff9800'}">[${tree.rarity}]</span></div>
-                <div class="item-cost">💰 ${formatTime(cost)}</div>
-            </div>
+            <div class="item-name">${tree.name.split(' ')[0]}</div>
+            <div class="item-cost">${formatTime(cost)}</div>
         `;
         container.appendChild(div);
     });
@@ -458,10 +490,26 @@ function generateAnimalMenu() {
         div.onclick = () => selectEntity(idx, 'animal');
         div.innerHTML = `
             <div class="item-emoji">${animal.emoji}</div>
-            <div class="item-info">
-                <div class="item-name">${animal.name} <span style="font-size:9px; color:${animal.rarity === 'Común' ? '#4caf50' : animal.rarity === 'Raro' ? '#2196f3' : animal.rarity === 'Épico' ? '#9c27b0' : '#ff9800'}">[${animal.rarity}]</span></div>
-                <div class="item-cost">💰 ${formatTime(cost)}</div>
-            </div>
+            <div class="item-name">${animal.name.split(' ')[0]}</div>
+            <div class="item-cost">${formatTime(cost)}</div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function generateHouseMenu() {
+    const container = document.getElementById('house-list');
+    if (!container) return;
+    container.innerHTML = '';
+    HOUSES.forEach((house, idx) => {
+        const cost = getEntityCost(house);
+        const div = document.createElement('div');
+        div.className = `item-card ${selectedType === 'house' && selectedEntityIndex === idx ? 'selected' : ''}`;
+        div.onclick = () => selectEntity(idx, 'house');
+        div.innerHTML = `
+            <div class="item-emoji">${house.emoji}</div>
+            <div class="item-name">${house.name.split(' ')[0]}</div>
+            <div class="item-cost">${formatTime(cost)}</div>
         `;
         container.appendChild(div);
     });
@@ -470,11 +518,9 @@ function generateAnimalMenu() {
 function selectEntity(index, type) {
     selectedEntityIndex = index;
     selectedType = type;
-    if (type === 'tree') {
-        generateTreeMenu();
-    } else {
-        generateAnimalMenu();
-    }
+    if (type === 'tree') generateTreeMenu();
+    else if (type === 'animal') generateAnimalMenu();
+    else generateHouseMenu();
     updateSelectedDisplay();
 }
 
@@ -482,14 +528,18 @@ function updateSelectedDisplay() {
     const selectedDisplay = document.getElementById('selected-display');
     if (!selectedDisplay) return;
     
-    let entity = selectedType === 'tree' ? TREES[selectedEntityIndex] : ANIMALS[selectedEntityIndex];
+    let entity;
+    if (selectedType === 'tree') entity = TREES[selectedEntityIndex];
+    else if (selectedType === 'animal') entity = ANIMALS[selectedEntityIndex];
+    else entity = HOUSES[selectedEntityIndex];
+    
     const cost = getEntityCost(entity);
     selectedDisplay.innerHTML = `
-        <div class="item-emoji" style="font-size:40px;">${entity.emoji}</div>
-        <p><strong>${entity.name}</strong></p>
-        <p style="color:#ff6f00;">💰 ${formatTime(cost)}</p>
-        <p style="font-size:10px; color:${entity.rarity === 'Común' ? '#4caf50' : entity.rarity === 'Raro' ? '#2196f3' : entity.rarity === 'Épico' ? '#9c27b0' : '#ff9800'}">✨ ${entity.rarity}</p>
-        <button id="start-entity-btn" class="btn-primary" style="margin-top:12px; width:100%; padding:10px;">🌱 Comenzar</button>
+        <div class="selected-emoji">${entity.emoji}</div>
+        <div class="selected-info">
+            <span class="selected-name">${entity.name}</span>
+            <span class="selected-cost">💰 ${formatTime(cost)}</span>
+        </div>
     `;
     const startBtn = document.getElementById('start-entity-btn');
     if (startBtn) startBtn.onclick = () => startFocus();
@@ -497,24 +547,27 @@ function updateSelectedDisplay() {
 
 // ============ ENFOQUE ============
 function startFocus() {
-    if (isBlocked) { alert(`🔒 ${userName}, ya estás en modo enfoque`); return; }
+    if (isBlocked) { showMessage("🔒 Ya estás en enfoque", "#f44336"); return; }
     if (focusInterval) clearInterval(focusInterval);
     
-    let entity = selectedType === 'tree' ? TREES[selectedEntityIndex] : ANIMALS[selectedEntityIndex];
+    let entity;
+    if (selectedType === 'tree') entity = TREES[selectedEntityIndex];
+    else if (selectedType === 'animal') entity = ANIMALS[selectedEntityIndex];
+    else entity = HOUSES[selectedEntityIndex];
+    
     let focusSeconds = cheatModeActive ? 5 : entity.cost * 60;
     currentFocusTime = focusSeconds;
     isBlocked = true;
     isPlantingMode = false;
     
     document.getElementById('blocker').classList.add('active');
-    document.getElementById('mode-status').innerText = cheatModeActive ? '🔴 PRUEBA' : '🔴 ENFOQUE';
     
     if (cheatModeActive) {
         document.getElementById('next-unlock').innerText = `5 segundos`;
-        document.getElementById('blocker-message').innerHTML = `${userName}, MODO PRUEBA - 5 segundos 🎮`;
+        document.getElementById('blocker-message').innerHTML = `${userName}, MODO PRUEBA 🎮`;
     } else {
         document.getElementById('next-unlock').innerText = formatTime(entity.cost);
-        document.getElementById('blocker-message').innerHTML = `${userName}, cultivando ${entity.name} ${entity.emoji}`;
+        document.getElementById('blocker-message').innerHTML = `${userName}, cultivando ${entity.name}`;
     }
     
     updateTimerDisplay();
@@ -543,7 +596,11 @@ function updateTimerDisplay() {
         }
     }
     
-    let entity = selectedType === 'tree' ? TREES[selectedEntityIndex] : ANIMALS[selectedEntityIndex];
+    let entity;
+    if (selectedType === 'tree') entity = TREES[selectedEntityIndex];
+    else if (selectedType === 'animal') entity = ANIMALS[selectedEntityIndex];
+    else entity = HOUSES[selectedEntityIndex];
+    
     let totalSeconds = cheatModeActive ? 5 : entity.cost * 60;
     const progress = ((totalSeconds - currentFocusTime) / totalSeconds) * 100;
     const fillElement = document.getElementById('progress-fill');
@@ -556,7 +613,11 @@ function unlockToAdd() {
     if (!isBlocked) return;
     clearInterval(focusInterval);
     
-    let entity = selectedType === 'tree' ? TREES[selectedEntityIndex] : ANIMALS[selectedEntityIndex];
+    let entity;
+    if (selectedType === 'tree') entity = TREES[selectedEntityIndex];
+    else if (selectedType === 'animal') entity = ANIMALS[selectedEntityIndex];
+    else entity = HOUSES[selectedEntityIndex];
+    
     const totalSeconds = cheatModeActive ? 5 : entity.cost * 60;
     addBlockedTime(totalSeconds);
     
@@ -566,49 +627,40 @@ function unlockToAdd() {
     showSuccessPopup();
     
     document.getElementById('blocker').classList.remove('active');
-    document.getElementById('mode-status').innerText = '🟢 AÑADIR';
-    document.getElementById('next-unlock').innerText = `30 minutos`;
-    
-    showMessage(`🎉 ¡Tiempo completado! Tienes 30 minutos para añadir ${entity.name}`, "#4caf50", 4000);
+    showMessage(`🎉 ¡Completado! Añade ${entity.name}`, "#4caf50", 3000);
     
     window.plantTimeout = setTimeout(() => {
         if (isPlantingMode && !isBlocked) {
             isPlantingMode = false;
-            showMessage("⏰ Tiempo agotado (30 min), no se añadió nada", "#f44336", 3000);
+            showMessage("⏰ Tiempo agotado", "#f44336", 2000);
         }
     }, UNLOCK_DURATION * 1000);
 }
 
 // ============ AÑADIR ENTIDADES ============
 function placeEntity(x, y) {
-    if (isBlocked) { 
-        showMessage("🔒 Celular bloqueado, espera a que termine el enfoque", "#f44336");
-        return; 
-    }
-    if (!isPlantingMode) { 
-        showMessage("🌱 Primero completa un tiempo de enfoque para añadir algo", "#ff9800");
-        return; 
-    }
+    if (isBlocked) { showMessage("🔒 Celular bloqueado", "#f44336"); return; }
+    if (!isPlantingMode) { showMessage("🌱 Completa un enfoque primero", "#ff9800"); return; }
     
-    let entity = selectedType === 'tree' ? TREES[selectedEntityIndex] : ANIMALS[selectedEntityIndex];
+    let entity;
+    if (selectedType === 'tree') entity = TREES[selectedEntityIndex];
+    else if (selectedType === 'animal') entity = ANIMALS[selectedEntityIndex];
+    else entity = HOUSES[selectedEntityIndex];
     
     const newEntity = {
         id: Date.now(),
         entityId: entity.id,
         name: entity.name,
         emoji: entity.emoji,
-        rarity: entity.rarity,
         type: entity.type,
         cost: cheatModeActive ? 5/60 : entity.cost,
         x: x,
         y: y
     };
     
-    if (entity.type === 'tree') {
-        plantedTrees.push(newEntity);
-    } else {
-        spawnedAnimals.push(newEntity);
-    }
+    if (entity.type === 'tree') plantedTrees.push(newEntity);
+    else if (entity.type === 'animal') spawnedAnimals.push(newEntity);
+    else placedHouses.push(newEntity);
     
     renderEntities();
     saveData();
@@ -617,10 +669,8 @@ function placeEntity(x, y) {
     if (window.plantTimeout) clearTimeout(window.plantTimeout);
     if (alarmInterval) clearInterval(alarmInterval);
     isPlantingMode = false;
-    document.getElementById('mode-status').innerText = '✅ Completado';
-    document.getElementById('next-unlock').innerText = 'Elige otro';
     
-    showMessage(`✅ ¡${entity.name} ${entity.emoji} añadido, ${userName}!`, "#4caf50", 2500);
+    showMessage(`✅ ¡${entity.name} añadido!`, "#4caf50", 1500);
 }
 
 // ============ MOVIMIENTO ANIMALES ============
@@ -629,8 +679,8 @@ function startAnimalMovement() {
     animalMoveInterval = setInterval(() => {
         if (spawnedAnimals.length > 0 && canvasWidth > 0 && canvasHeight > 0) {
             spawnedAnimals.forEach(animal => {
-                const newX = Math.max(20, Math.min(canvasWidth - 20, animal.x + (Math.random() - 0.5) * 60));
-                const newY = Math.max(20, Math.min(canvasHeight - 20, animal.y + (Math.random() - 0.5) * 60));
+                const newX = Math.max(20, Math.min(canvasWidth - 20, animal.x + (Math.random() - 0.5) * 50));
+                const newY = Math.max(20, Math.min(canvasHeight - 20, animal.y + (Math.random() - 0.5) * 50));
                 animal.x = newX;
                 animal.y = newY;
             });
@@ -645,29 +695,32 @@ function renderEntities() {
     if (!overlay) return;
     overlay.innerHTML = '';
     
-    const allEntities = [...plantedTrees, ...spawnedAnimals];
+    const allEntities = [...plantedTrees, ...spawnedAnimals, ...placedHouses];
     allEntities.forEach((entity, idx) => {
         const entityDiv = document.createElement('div');
         entityDiv.className = 'entity';
-        const posX = entity.x || (idx * 35 % (canvasWidth || 800) + 20);
-        const posY = entity.y || (Math.floor(idx / 20) * 35 + 30);
+        const posX = entity.x || (idx * 38 % (canvasWidth || 800) + 20);
+        const posY = entity.y || (Math.floor(idx / 20) * 38 + 30);
         entityDiv.style.left = `${posX}px`;
         entityDiv.style.top = `${posY}px`;
         entityDiv.innerHTML = `${entity.emoji}<div class="entity-tooltip">${entity.name} | ${formatTime(entity.cost)}</div>`;
         entityDiv.onclick = (e) => {
             e.stopPropagation();
-            if (confirm(`${userName}, ¿eliminar este ${entity.name}?`)) {
+            if (confirm(`¿Eliminar ${entity.name}?`)) {
                 if (entity.type === 'tree') {
                     const index = plantedTrees.findIndex(t => t.id === entity.id);
                     if (index !== -1) plantedTrees.splice(index, 1);
-                } else {
+                } else if (entity.type === 'animal') {
                     const index = spawnedAnimals.findIndex(a => a.id === entity.id);
                     if (index !== -1) spawnedAnimals.splice(index, 1);
+                } else {
+                    const index = placedHouses.findIndex(h => h.id === entity.id);
+                    if (index !== -1) placedHouses.splice(index, 1);
                 }
                 renderEntities();
                 saveData();
                 updateStats();
-                showMessage(`🗑️ ${entity.name} eliminado`, "#ff9800", 1500);
+                showMessage(`🗑️ ${entity.name} eliminado`, "#ff9800", 1000);
             }
         };
         overlay.appendChild(entityDiv);
@@ -676,26 +729,31 @@ function renderEntities() {
 
 // ============ ESTADÍSTICAS ============
 function updateStats() {
-    const treeCountSpan = document.getElementById('tree-count');
-    if (treeCountSpan) treeCountSpan.innerText = plantedTrees.length;
-    const animalCountSpan = document.getElementById('animal-count');
-    if (animalCountSpan) animalCountSpan.innerText = spawnedAnimals.length;
-    const totalTime = [...plantedTrees, ...spawnedAnimals].reduce((sum, e) => sum + (e.cost || 0), 0);
-    const totalTimeSpan = document.getElementById('total-time');
-    if (totalTimeSpan) totalTimeSpan.innerText = formatTime(totalTime);
+    const treeSpan = document.getElementById('tree-count');
+    const animalSpan = document.getElementById('animal-count');
+    const houseSpan = document.getElementById('house-count');
+    const totalSpan = document.getElementById('total-time');
+    
+    if (treeSpan) treeSpan.innerText = plantedTrees.length;
+    if (animalSpan) animalSpan.innerText = spawnedAnimals.length;
+    if (houseSpan) houseSpan.innerText = placedHouses.length;
+    
+    const totalTime = [...plantedTrees, ...spawnedAnimals, ...placedHouses].reduce((sum, e) => sum + (e.cost || 0), 0);
+    if (totalSpan) totalSpan.innerText = formatTime(totalTime);
 }
 
 function clearGarden() {
-    if (confirm(`⚠️ ${userName}, ¿eliminar TODOS los árboles y animales?`)) {
+    if (confirm(`⚠️ ¿Eliminar TODO?`)) {
         plantedTrees = [];
         spawnedAnimals = [];
+        placedHouses = [];
         renderEntities();
         saveData();
         updateStats();
-        showMessage("🗑️ Jardín limpiado", "#ff9800", 2000);
+        showMessage("🗑️ Jardín limpiado", "#ff9800", 1500);
     }
 }
 
 function setupGardenClick() {
-    console.log("Garden click setup completed");
+    console.log("Ready!");
 }
