@@ -1,701 +1,649 @@
-// Configuración
-const UNLOCK_DURATION = 1800;
-const CELL_SIZE = 20;
-const ANIMAL_MOVE_INTERVAL = 3000;
-
-// Árboles
-const TREES = [
-    { id: 1, name: "🌲 Pino", rarity: "Común", cost: 5, emoji: "🌲", type: "tree" },
-    { id: 2, name: "🌳 Roble", rarity: "Común", cost: 10, emoji: "🌳", type: "tree" },
-    { id: 3, name: "🎄 Abeto", rarity: "Común", cost: 15, emoji: "🎄", type: "tree" },
-    { id: 4, name: "🌴 Palmera", rarity: "Común", cost: 20, emoji: "🌴", type: "tree" },
-    { id: 5, name: "🍁 Arce", rarity: "Común", cost: 25, emoji: "🍁", type: "tree" },
-    { id: 6, name: "🌸 Cerezo", rarity: "Raro", cost: 35, emoji: "🌸", type: "tree" },
-    { id: 7, name: "🍊 Naranjo", rarity: "Raro", cost: 45, emoji: "🍊", type: "tree" },
-    { id: 8, name: "🌿 Sauce", rarity: "Raro", cost: 55, emoji: "🌿", type: "tree" },
-    { id: 9, name: "🍂 Olmo", rarity: "Raro", cost: 65, emoji: "🍂", type: "tree" },
-    { id: 10, name: "🌺 Flor de Cerezo", rarity: "Raro", cost: 75, emoji: "🌺", type: "tree" },
-    { id: 11, name: "✨ Árbol Brillante", rarity: "Épico", cost: 100, emoji: "✨", type: "tree" },
-    { id: 12, name: "🔥 Árbol Ígneo", rarity: "Épico", cost: 120, emoji: "🔥", type: "tree" },
-    { id: 13, name: "💎 Árbol Cristal", rarity: "Épico", cost: 150, emoji: "💎", type: "tree" },
-    { id: 14, name: "🌙 Árbol Lunar", rarity: "Legendario", cost: 200, emoji: "🌙", type: "tree" },
-    { id: 15, name: "👑 Árbol Real", rarity: "Legendario", cost: 250, emoji: "👑", type: "tree" }
-];
-
-// Animales
-const ANIMALS = [
-    { id: 1, name: "🐕 Perro", rarity: "Común", cost: 8, emoji: "🐕", type: "animal" },
-    { id: 2, name: "🐈 Gato", rarity: "Común", cost: 8, emoji: "🐈", type: "animal" },
-    { id: 3, name: "🐇 Conejo", rarity: "Común", cost: 10, emoji: "🐇", type: "animal" },
-    { id: 4, name: "🐿️ Ardilla", rarity: "Común", cost: 12, emoji: "🐿️", type: "animal" },
-    { id: 5, name: "🦊 Zorro", rarity: "Raro", cost: 20, emoji: "🦊", type: "animal" },
-    { id: 6, name: "🐺 Lobo", rarity: "Raro", cost: 25, emoji: "🐺", type: "animal" },
-    { id: 7, name: "🦌 Ciervo", rarity: "Raro", cost: 30, emoji: "🦌", type: "animal" },
-    { id: 8, name: "🦚 Pavo Real", rarity: "Épico", cost: 50, emoji: "🦚", type: "animal" },
-    { id: 9, name: "🐉 Dragón", rarity: "Legendario", cost: 100, emoji: "🐉", type: "animal" },
-    { id: 10, name: "🦄 Unicornio", rarity: "Legendario", cost: 150, emoji: "🦄", type: "animal" }
-];
-
-let currentFocusTime = 0;
-let focusInterval = null;
-let isBlocked = false;
-let selectedEntityIndex = 0;
-let selectedType = "tree";
-let plantedTrees = [];
-let spawnedAnimals = [];
-let userName = "";
-let isPlantingMode = false;
-let alarmInterval = null;
-let cheatModeActive = false;
-let cheatCodeEntered = "";
-let totalBlockedSeconds = 0;
-let coloringModeActive = false;
-let animalMoveInterval = null;
-
-let canvas = null;
-let ctx = null;
-let canvasWidth = 0;
-let canvasHeight = 0;
-let cols = 0;
-let rows = 0;
-let gridColors = [];
-let brushColor = "#4caf50";
-
-const CHEAT_CODE = "409070110409070110409070110";
-
-// ============ INICIALIZACIÓN ============
-document.addEventListener('DOMContentLoaded', function() {
-    loadSavedData();
-    initCanvas();
-    setupGardenClick();
-    setupDetection();
-    setupCheatCodeDetection();
-    setupGridControls();
+:root {
+    --primary-green: #2E7D32;
+    --primary-green-dark: #1B5E20;
+    --primary-blue: #1565C0;
+    --gray-bg: #F5F7FA;
+    --gray-card: #FFFFFF;
+    --gray-text: #4B5563;
+    --gray-text-light: #6B7280;
+    --border-radius-card: 24px;
+    --border-radius-element: 16px;
+    --box-shadow-soft: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
+    --box-shadow-card: 0 20px 40px -15px rgba(0, 0, 0, 0.1);
+    --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
     
-    document.getElementById('start-btn').onclick = () => startApp();
-    document.getElementById('clear-garden').onclick = clearGarden;
-    document.getElementById('reset-all-colors').onclick = resetAllColors;
-    document.getElementById('toggle-coloring-mode').onclick = toggleColoringMode;
-    document.getElementById('tab-trees').onclick = () => switchTab('tree');
-    document.getElementById('tab-animals').onclick = () => switchTab('animal');
-    
-    if (userName) {
-        document.getElementById('user-name').value = userName;
-        startApp();
-    }
-});
-
-function switchTab(tab) {
-    selectedType = tab;
-    const treesTab = document.getElementById('tab-trees');
-    const animalsTab = document.getElementById('tab-animals');
-    const treeList = document.getElementById('tree-list');
-    const animalList = document.getElementById('animal-list');
-    
-    if (tab === 'tree') {
-        treesTab.classList.add('active');
-        animalsTab.classList.remove('active');
-        treeList.style.display = 'flex';
-        animalList.style.display = 'none';
-        generateTreeMenu();
-        selectEntity(0, 'tree');
-        document.getElementById('selected-title').innerHTML = '🌲 Selección actual';
-    } else {
-        treesTab.classList.remove('active');
-        animalsTab.classList.add('active');
-        treeList.style.display = 'none';
-        animalList.style.display = 'flex';
-        generateAnimalMenu();
-        selectEntity(0, 'animal');
-        document.getElementById('selected-title').innerHTML = '🐾 Selección actual';
-    }
+    /* Transiciones globales */
+    --transition-fast: 0.2s ease;
+    --transition-smooth: 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-function toggleColoringMode() {
-    coloringModeActive = !coloringModeActive;
-    const btn = document.getElementById('toggle-coloring-mode');
-    if (btn) {
-        if (coloringModeActive) {
-            btn.textContent = '🎨 Modo Coloreo: ON';
-            btn.style.background = '#ff9800';
-            btn.style.color = 'white';
-            showMessage("🎨 Modo coloreo ACTIVADO - Puedes pintar los cuadros", "#ff9800", 1500);
-        } else {
-            btn.textContent = '🎨 Modo Coloreo: OFF';
-            btn.style.background = '#e5e7eb';
-            btn.style.color = '#1f2937';
-            showMessage("🎨 Modo coloreo DESACTIVADO - Puedes plantar/criar", "#4caf50", 1500);
-        }
-    }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
 }
 
-// ============ CANVAS ============
-function initCanvas() {
-    canvas = document.getElementById('garden-canvas');
-    if (!canvas) return;
-    ctx = canvas.getContext('2d');
-    resizeCanvas();
-    window.addEventListener('resize', () => resizeCanvas());
-    
-    canvas.addEventListener('click', handleCanvasClick);
-    canvas.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        const rect = canvas.getBoundingClientRect();
-        const touch = e.touches[0];
-        const x = (touch.clientX - rect.left) * (canvas.width / rect.width);
-        const y = (touch.clientY - rect.top) * (canvas.height / rect.height);
-        handleCanvasClickAt(x, y);
-    });
+body {
+    font-family: var(--font-sans);
+    background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+    min-height: 100vh;
+    padding: 24px 16px;
+    color: #1F2937;
+    overflow-x: hidden;
 }
 
-function resizeCanvas() {
-    const area = document.getElementById('garden-area');
-    if (!area) return;
-    const containerWidth = area.clientWidth - 4;
-    canvasWidth = Math.max(containerWidth, 400);
-    canvasHeight = canvasWidth * 0.6;
-    canvas.width = canvasWidth;
-    canvas.height = canvasHeight;
-    canvas.style.width = `${canvasWidth}px`;
-    canvas.style.height = `${canvasHeight}px`;
-    cols = Math.ceil(canvasWidth / CELL_SIZE);
-    rows = Math.ceil(canvasHeight / CELL_SIZE);
-    loadGridColors();
-    drawGrid();
-    renderEntities();
+/* --- Layout Principal --- */
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
-function drawGrid() {
-    if (!ctx) return;
-    for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < cols; col++) {
-            const x = col * CELL_SIZE;
-            const y = row * CELL_SIZE;
-            ctx.fillStyle = (gridColors[row] && gridColors[row][col]) ? gridColors[row][col] : "#8b5a2b";
-            ctx.fillRect(x, y, CELL_SIZE - 0.5, CELL_SIZE - 0.5);
-        }
-    }
+.card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: var(--border-radius-card);
+    box-shadow: var(--box-shadow-card);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    overflow: hidden;
+    backdrop-filter: blur(10px);
 }
 
-function handleCanvasClick(e) {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const x = (e.clientX - rect.left) * scaleX;
-    const y = (e.clientY - rect.top) * scaleY;
-    handleCanvasClickAt(x, y);
+.hidden {
+    display: none !important;
 }
 
-function handleCanvasClickAt(x, y) {
-    if (x < 0 || x >= canvas.width || y < 0 || y >= canvas.height) return;
-    const col = Math.floor(x / CELL_SIZE);
-    const row = Math.floor(y / CELL_SIZE);
-    if (row >= 0 && row < rows && col >= 0 && col < cols) {
-        if (coloringModeActive) {
-            gridColors[row][col] = brushColor;
-            drawGrid();
-            saveGridColors();
-        } else {
-            if (isPlantingMode && !isBlocked) {
-                placeEntity(x, y);
-            } else if (!isPlantingMode && !isBlocked) {
-                showMessage("🌱 Primero completa un tiempo de enfoque para añadir algo", "#ff9800", 1500);
-            } else if (isBlocked) {
-                showMessage("🔒 Celular bloqueado, espera a que termine el enfoque", "#f44336", 1500);
-            }
-        }
-    }
+/* --- Pantalla de Bienvenida --- */
+.screen-layer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
 }
 
-function saveGridColors() {
-    localStorage.setItem('focusForestGrid', JSON.stringify({ gridColors, cols, rows }));
+.screen-layer.active {
+    opacity: 1;
+    visibility: visible;
 }
 
-function loadGridColors() {
-    const saved = localStorage.getItem('focusForestGrid');
-    if (saved) {
-        const data = JSON.parse(saved);
-        if (data.gridColors && data.rows === rows && data.cols === cols) {
-            gridColors = data.gridColors;
-            return;
-        }
-    }
-    gridColors = [];
-    for (let i = 0; i < rows; i++) {
-        gridColors.push([]);
-        for (let j = 0; j < cols; j++) gridColors[i][j] = "#8b5a2b";
-    }
+#welcome-screen {
+    background: linear-gradient(135deg, #E8F5E9 0%, #A5D6A7 100%);
+    z-index: 20000;
 }
 
-function resetAllColors() {
-    for (let i = 0; i < rows; i++) {
-        for (let j = 0; j < cols; j++) gridColors[i][j] = "#8b5a2b";
-    }
-    drawGrid();
-    saveGridColors();
-    showMessage("🟫 Todos los cuadros restablecidos a café", "#ff9800");
+#blocker {
+    background: rgba(0, 0, 0, 0.98);
+    z-index: 15000;
 }
 
-function setupGridControls() {
-    const brushPicker = document.getElementById('brush-color');
-    if (brushPicker) {
-        brushPicker.value = brushColor;
-        brushPicker.onchange = (e) => { brushColor = e.target.value; };
-    }
+.welcome-card {
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 48px;
+    padding: 48px 32px;
+    text-align: center;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    max-width: 500px;
+    width: 90%;
+    transform: translateY(20px);
+    transition: transform 0.4s ease;
 }
 
-// ============ UTILIDADES ============
-function showMessage(text, bgColor = "#4caf50", duration = 2000) {
-    const msg = document.createElement('div');
-    msg.textContent = text;
-    msg.style.cssText = `position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:${bgColor}; color:white; padding:10px 20px; border-radius:30px; z-index:9999; font-size:13px; animation:fadeOut ${duration/1000}s forwards; white-space:nowrap;`;
-    document.body.appendChild(msg);
-    setTimeout(() => msg.remove(), duration);
+#welcome-screen.active .welcome-card {
+    transform: translateY(0);
 }
 
-function getEntityCost(entity) {
-    if (cheatModeActive) return 5 / 60;
-    return entity.cost;
+.welcome-icon {
+    font-size: 72px;
+    margin-bottom: 20px;
+    animation: float 3s ease-in-out infinite;
 }
 
-function getEntityCostInSeconds(entity) {
-    if (cheatModeActive) return 5;
-    return entity.cost * 60;
+.welcome-card h1 {
+    font-size: 42px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary-green-dark), var(--primary-blue));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 12px;
 }
 
-function formatTime(minutes) {
-    if (cheatModeActive) return `5s (prueba)`;
-    if (minutes === 1) return '1 min';
-    if (minutes < 60) return `${minutes} min`;
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    if (mins === 0) return `${hours} hora${hours > 1 ? 's' : ''}`;
-    return `${hours}h ${mins}min`;
+.welcome-card p {
+    color: var(--gray-text);
+    margin-bottom: 32px;
+    font-size: 16px;
 }
 
-function formatSeconds(seconds) {
-    const hours = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    if (hours > 0) return `${hours}h ${mins}min`;
-    if (mins > 0) return `${mins} min ${secs}s`;
-    return `${secs} segundos`;
+.welcome-card input {
+    width: 100%;
+    padding: 16px 20px;
+    font-size: 16px;
+    border: 2px solid #E5E7EB;
+    border-radius: 40px;
+    margin-bottom: 24px;
+    text-align: center;
+    font-family: inherit;
+    transition: border-color var(--transition-fast);
 }
 
-function saveData() {
-    localStorage.setItem('focusForest', JSON.stringify({
-        userName, plantedTrees, spawnedAnimals, cheatModeActive, totalBlockedSeconds
-    }));
+.welcome-card input:focus {
+    outline: none;
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.1);
 }
 
-function loadSavedData() {
-    const saved = localStorage.getItem('focusForest');
-    if (saved) {
-        const data = JSON.parse(saved);
-        if (data.userName) userName = data.userName;
-        if (data.cheatModeActive) cheatModeActive = data.cheatModeActive;
-        if (data.totalBlockedSeconds) totalBlockedSeconds = data.totalBlockedSeconds;
-        plantedTrees = data.plantedTrees || [];
-        spawnedAnimals = data.spawnedAnimals || [];
-        updateStats();
-        updateBlockedTimeStats();
-    }
+.welcome-card button {
+    width: 100%;
+    padding: 16px;
+    font-size: 16px;
+    font-weight: 600;
 }
 
-function updateBlockedTimeStats() {
-    const span = document.getElementById('total-blocked-time');
-    if (span) span.innerText = formatSeconds(totalBlockedSeconds);
+.cheat-hint {
+    font-size: 12px;
+    color: var(--gray-text-light);
+    margin-top: 16px !important;
+    margin-bottom: 0 !important;
+    opacity: 0.6;
 }
 
-function addBlockedTime(seconds) {
-    totalBlockedSeconds += seconds;
-    updateBlockedTimeStats();
-    saveData();
+/* --- Overlay de Bloqueo --- */
+.blocker-content {
+    text-align: center;
+    padding: 20px;
+    width: 100%;
+    max-width: 450px;
 }
 
-// ============ MODO PRUEBA ============
-function setupCheatCodeDetection() {
-    const nameInput = document.getElementById('user-name');
-    if (nameInput) {
-        nameInput.addEventListener('input', (e) => {
-            const lastChar = e.data || '';
-            cheatCodeEntered += lastChar;
-            if (cheatCodeEntered.length > CHEAT_CODE.length) {
-                cheatCodeEntered = cheatCodeEntered.slice(-CHEAT_CODE.length);
-            }
-            if (cheatCodeEntered === CHEAT_CODE && !cheatModeActive) {
-                cheatModeActive = true;
-                showMessage("🎮 MODO PRUEBA ACTIVADO - Todo cuesta 5 segundos", "#ff9800", 3000);
-                nameInput.style.borderColor = "#ff9800";
-                nameInput.style.boxShadow = "0 0 0 3px rgba(255,152,0,0.3)";
-                saveData();
-                if (document.getElementById('main-app').style.display === 'block') {
-                    if (selectedType === 'tree') generateTreeMenu();
-                    else generateAnimalMenu();
-                    updateSelectedDisplay();
-                    updateStats();
-                }
-            }
-        });
-    }
+.lock-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+    animation: pulse 2s infinite;
 }
 
-// ============ ALARMA ============
-function playAlarmTenTimes() {
-    let count = 0;
-    function beep() {
-        try {
-            const context = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = context.createOscillator();
-            const gain = context.createGain();
-            oscillator.connect(gain);
-            gain.connect(context.destination);
-            oscillator.frequency.value = 880;
-            gain.gain.value = 0.4;
-            oscillator.start();
-            gain.gain.exponentialRampToValueAtTime(0.00001, context.currentTime + 1);
-            oscillator.stop(context.currentTime + 1);
-            setTimeout(() => context.close(), 1500);
-        } catch(e) {}
-    }
-    if (alarmInterval) clearInterval(alarmInterval);
-    beep();
-    count = 1;
-    alarmInterval = setInterval(() => {
-        if (count < 10) { beep(); count++; }
-        else { clearInterval(alarmInterval); alarmInterval = null; }
-    }, 1500);
+.blocker-content h1 {
+    font-size: 32px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #FFD700;
 }
 
-function showSuccessPopup() {
-    const popup = document.createElement('div');
-    popup.style.cssText = `position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:linear-gradient(135deg,#2E7D32,#1B5E20); color:white; padding:30px 40px; border-radius:50px; text-align:center; z-index:20000; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); animation:bounceIn 0.5s ease; min-width:280px; max-width:90%; border:2px solid #FFD700;`;
-    popup.innerHTML = `<div style="font-size:60px; margin-bottom:12px;">🏆</div><h1 style="font-size:32px; margin-bottom:12px;">¡LO LOGRASTE!</h1><p style="margin-bottom:12px;">Has completado el tiempo de enfoque</p><p>Tienes <strong style="color:#FFD700;">30 minutos</strong> para añadir algo 🌳🐾</p><button id="close-popup" style="margin-top:20px; padding:10px 25px; background:white; color:#2E7D32; border:none; border-radius:40px; font-size:14px; font-weight:bold; cursor:pointer;">✨ Añadir ✨</button>`;
-    document.body.appendChild(popup);
-    document.getElementById('close-popup').onclick = () => popup.remove();
-    setTimeout(() => popup.remove(), 10000);
+#blocker-message {
+    font-size: 16px;
+    opacity: 0.8;
+    margin-bottom: 40px;
 }
 
-// ============ DETECCIÓN (NO PENALIZA BLOQUEO) ============
-function setupDetection() {
-    let visibilityStart = 0;
-    let wasHidden = false;
-    
-    document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-            visibilityStart = Date.now();
-            wasHidden = true;
-        } else if (wasHidden && isBlocked && !isPlantingMode) {
-            const hiddenTime = Date.now() - visibilityStart;
-            if (hiddenTime > 3000) {
-                resetCounter('Cambiaste de aplicación/pestaña');
-            }
-            wasHidden = false;
-        }
-    });
+.timer-display {
+    font-size: 64px;
+    font-weight: 700;
+    font-family: monospace;
+    margin: 30px 0;
+    letter-spacing: 5px;
+    background: rgba(255,255,255,0.08);
+    padding: 30px;
+    border-radius: 60px;
+    border: 1px solid rgba(255,255,255,0.1);
 }
 
-function resetCounter(reason) {
-    if (!isBlocked) return;
-    if (focusInterval) clearInterval(focusInterval);
-    if (alarmInterval) clearInterval(alarmInterval);
-    isBlocked = false;
-    isPlantingMode = false;
-    currentFocusTime = 0;
-    document.getElementById('blocker').classList.remove('active');
-    document.getElementById('mode-status').innerText = 'Libre';
-    showMessage(`⚠️ ${reason} - Contador reiniciado`, "#f44336", 3000);
+.progress-bar-container {
+    width: 85%;
+    max-width: 320px;
+    margin: 20px auto;
 }
 
-// ============ INICIAR APP ============
-function startApp() {
-    userName = document.getElementById('user-name').value.trim();
-    if (userName === "") { alert("Ingresa tu nombre"); return; }
-    saveData();
-    document.getElementById('user-name-display').innerText = userName;
-    document.getElementById('garden-title').innerHTML = cheatModeActive ? `🌱 Jardín de ${userName} 🎮` : `🌱 Jardín de ${userName}`;
-    document.getElementById('welcome-screen').style.display = 'none';
-    document.getElementById('main-app').style.display = 'block';
-    generateTreeMenu();
-    generateAnimalMenu();
-    renderEntities();
-    updateStats();
-    updateBlockedTimeStats();
-    selectEntity(0, 'tree');
-    startAnimalMovement();
-    setTimeout(() => resizeCanvas(), 100);
+.progress-bar {
+    width: 100%;
+    height: 10px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 5px;
+    overflow: hidden;
 }
 
-// ============ MENÚS ============
-function generateTreeMenu() {
-    const container = document.getElementById('tree-list');
-    if (!container) return;
-    container.innerHTML = '';
-    TREES.forEach((tree, idx) => {
-        const cost = getEntityCost(tree);
-        const div = document.createElement('div');
-        div.className = `item-card ${selectedType === 'tree' && selectedEntityIndex === idx ? 'selected' : ''}`;
-        div.onclick = () => selectEntity(idx, 'tree');
-        div.innerHTML = `
-            <div class="item-emoji">${tree.emoji}</div>
-            <div class="item-info">
-                <div class="item-name">${tree.name} <span style="font-size:9px; color:${tree.rarity === 'Común' ? '#4caf50' : tree.rarity === 'Raro' ? '#2196f3' : tree.rarity === 'Épico' ? '#9c27b0' : '#ff9800'}">[${tree.rarity}]</span></div>
-                <div class="item-cost">💰 ${formatTime(cost)}</div>
-            </div>
-        `;
-        container.appendChild(div);
-    });
+#progress-fill {
+    height: 100%;
+    background: #4caf50;
+    width: 0%;
+    transition: width 0.3s linear;
 }
 
-function generateAnimalMenu() {
-    const container = document.getElementById('animal-list');
-    if (!container) return;
-    container.innerHTML = '';
-    ANIMALS.forEach((animal, idx) => {
-        const cost = getEntityCost(animal);
-        const div = document.createElement('div');
-        div.className = `item-card ${selectedType === 'animal' && selectedEntityIndex === idx ? 'selected' : ''}`;
-        div.onclick = () => selectEntity(idx, 'animal');
-        div.innerHTML = `
-            <div class="item-emoji">${animal.emoji}</div>
-            <div class="item-info">
-                <div class="item-name">${animal.name} <span style="font-size:9px; color:${animal.rarity === 'Común' ? '#4caf50' : animal.rarity === 'Raro' ? '#2196f3' : animal.rarity === 'Épico' ? '#9c27b0' : '#ff9800'}">[${animal.rarity}]</span></div>
-                <div class="item-cost">💰 ${formatTime(cost)}</div>
-            </div>
-        `;
-        container.appendChild(div);
-    });
+#progress-percentage {
+    margin-top: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #4caf50;
 }
 
-function selectEntity(index, type) {
-    selectedEntityIndex = index;
-    selectedType = type;
-    if (type === 'tree') {
-        generateTreeMenu();
-    } else {
-        generateAnimalMenu();
-    }
-    updateSelectedDisplay();
+.blocker-footer {
+    margin-top: 60px;
+    font-size: 13px;
+    color: #ff9800;
 }
 
-function updateSelectedDisplay() {
-    const selectedDisplay = document.getElementById('selected-display');
-    if (!selectedDisplay) return;
-    
-    let entity = selectedType === 'tree' ? TREES[selectedEntityIndex] : ANIMALS[selectedEntityIndex];
-    const cost = getEntityCost(entity);
-    selectedDisplay.innerHTML = `
-        <div class="item-emoji" style="font-size:40px;">${entity.emoji}</div>
-        <p><strong>${entity.name}</strong></p>
-        <p style="color:#ff6f00;">💰 ${formatTime(cost)}</p>
-        <p style="font-size:10px; color:${entity.rarity === 'Común' ? '#4caf50' : entity.rarity === 'Raro' ? '#2196f3' : entity.rarity === 'Épico' ? '#9c27b0' : '#ff9800'}">✨ ${entity.rarity}</p>
-        <button id="start-entity-btn" class="btn-primary" style="margin-top:12px; width:100%; padding:10px;">🌱 Comenzar</button>
-    `;
-    const startBtn = document.getElementById('start-entity-btn');
-    if (startBtn) startBtn.onclick = () => startFocus();
+.blocker-footer .small-text {
+    font-size: 11px;
+    color: #f44336;
+    margin-top: 8px;
 }
 
-// ============ ENFOQUE ============
-function startFocus() {
-    if (isBlocked) { alert(`🔒 ${userName}, ya estás en modo enfoque`); return; }
-    if (focusInterval) clearInterval(focusInterval);
-    
-    let entity = selectedType === 'tree' ? TREES[selectedEntityIndex] : ANIMALS[selectedEntityIndex];
-    let focusSeconds = cheatModeActive ? 5 : entity.cost * 60;
-    currentFocusTime = focusSeconds;
-    isBlocked = true;
-    isPlantingMode = false;
-    
-    document.getElementById('blocker').classList.add('active');
-    document.getElementById('mode-status').innerText = cheatModeActive ? '🔴 PRUEBA' : '🔴 ENFOQUE';
-    
-    if (cheatModeActive) {
-        document.getElementById('next-unlock').innerText = `5 segundos`;
-        document.getElementById('blocker-message').innerHTML = `${userName}, MODO PRUEBA - 5 segundos 🎮`;
-    } else {
-        document.getElementById('next-unlock').innerText = formatTime(entity.cost);
-        document.getElementById('blocker-message').innerHTML = `${userName}, cultivando ${entity.name} ${entity.emoji}`;
-    }
-    
-    updateTimerDisplay();
-    
-    focusInterval = setInterval(() => {
-        if (currentFocusTime <= 0) { 
-            clearInterval(focusInterval); 
-            unlockToAdd(); 
-        } else { 
-            currentFocusTime--; 
-            updateTimerDisplay(); 
-        }
-    }, 1000);
+/* --- Tienda --- */
+.tree-menu {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
 }
 
-function updateTimerDisplay() {
-    const seconds = currentFocusTime;
-    const timerElement = document.getElementById('timer');
-    if (timerElement) {
-        if (cheatModeActive || seconds < 60) {
-            timerElement.innerText = `${seconds}s`;
-        } else {
-            const minutes = Math.floor(seconds / 60);
-            const secs = seconds % 60;
-            timerElement.innerText = `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        }
-    }
-    
-    let entity = selectedType === 'tree' ? TREES[selectedEntityIndex] : ANIMALS[selectedEntityIndex];
-    let totalSeconds = cheatModeActive ? 5 : entity.cost * 60;
-    const progress = ((totalSeconds - currentFocusTime) / totalSeconds) * 100;
-    const fillElement = document.getElementById('progress-fill');
-    if (fillElement) fillElement.style.width = `${Math.min(100, Math.max(0, progress))}%`;
-    const percentageElement = document.getElementById('progress-percentage');
-    if (percentageElement) percentageElement.innerText = `${Math.round(progress)}%`;
+.menu-tabs {
+    display: flex;
+    border-bottom: 1px solid #E5E7EB;
 }
 
-function unlockToAdd() {
-    if (!isBlocked) return;
-    clearInterval(focusInterval);
-    
-    let entity = selectedType === 'tree' ? TREES[selectedEntityIndex] : ANIMALS[selectedEntityIndex];
-    const totalSeconds = cheatModeActive ? 5 : entity.cost * 60;
-    addBlockedTime(totalSeconds);
-    
-    isBlocked = false;
-    isPlantingMode = true;
-    playAlarmTenTimes();
-    showSuccessPopup();
-    
-    document.getElementById('blocker').classList.remove('active');
-    document.getElementById('mode-status').innerText = '🟢 AÑADIR';
-    document.getElementById('next-unlock').innerText = `30 minutos`;
-    
-    showMessage(`🎉 ¡Tiempo completado! Tienes 30 minutos para añadir ${entity.name}`, "#4caf50", 4000);
-    
-    window.plantTimeout = setTimeout(() => {
-        if (isPlantingMode && !isBlocked) {
-            isPlantingMode = false;
-            showMessage("⏰ Tiempo agotado (30 min), no se añadió nada", "#f44336", 3000);
-        }
-    }, UNLOCK_DURATION * 1000);
+.tab-btn {
+    flex: 1;
+    padding: 16px;
+    background: #F3F4F6;
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    color: var(--gray-text);
 }
 
-// ============ AÑADIR ENTIDADES ============
-function placeEntity(x, y) {
-    if (isBlocked) { 
-        showMessage("🔒 Celular bloqueado, espera a que termine el enfoque", "#f44336");
-        return; 
-    }
-    if (!isPlantingMode) { 
-        showMessage("🌱 Primero completa un tiempo de enfoque para añadir algo", "#ff9800");
-        return; 
-    }
-    
-    let entity = selectedType === 'tree' ? TREES[selectedEntityIndex] : ANIMALS[selectedEntityIndex];
-    
-    const newEntity = {
-        id: Date.now(),
-        entityId: entity.id,
-        name: entity.name,
-        emoji: entity.emoji,
-        rarity: entity.rarity,
-        type: entity.type,
-        cost: cheatModeActive ? 5/60 : entity.cost,
-        x: x,
-        y: y
-    };
-    
-    if (entity.type === 'tree') {
-        plantedTrees.push(newEntity);
-    } else {
-        spawnedAnimals.push(newEntity);
-    }
-    
-    renderEntities();
-    saveData();
-    updateStats();
-    
-    if (window.plantTimeout) clearTimeout(window.plantTimeout);
-    if (alarmInterval) clearInterval(alarmInterval);
-    isPlantingMode = false;
-    document.getElementById('mode-status').innerText = '✅ Completado';
-    document.getElementById('next-unlock').innerText = 'Elige otro';
-    
-    showMessage(`✅ ¡${entity.name} ${entity.emoji} añadido, ${userName}!`, "#4caf50", 2500);
+.tab-btn.active {
+    background: white;
+    color: var(--primary-green);
+    border-bottom: 3px solid var(--primary-green);
 }
 
-// ============ MOVIMIENTO ANIMALES ============
-function startAnimalMovement() {
-    if (animalMoveInterval) clearInterval(animalMoveInterval);
-    animalMoveInterval = setInterval(() => {
-        if (spawnedAnimals.length > 0 && canvasWidth > 0 && canvasHeight > 0) {
-            spawnedAnimals.forEach(animal => {
-                const newX = Math.max(20, Math.min(canvasWidth - 20, animal.x + (Math.random() - 0.5) * 60));
-                const newY = Math.max(20, Math.min(canvasHeight - 20, animal.y + (Math.random() - 0.5) * 60));
-                animal.x = newX;
-                animal.y = newY;
-            });
-            renderEntities();
-        }
-    }, ANIMAL_MOVE_INTERVAL);
+.item-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 200px;
 }
 
-// ============ RENDERIZADO ============
-function renderEntities() {
-    const overlay = document.getElementById('entities-overlay');
-    if (!overlay) return;
-    overlay.innerHTML = '';
-    
-    const allEntities = [...plantedTrees, ...spawnedAnimals];
-    allEntities.forEach((entity, idx) => {
-        const entityDiv = document.createElement('div');
-        entityDiv.className = 'entity';
-        const posX = entity.x || (idx * 45 % (canvasWidth || 800) + 30);
-        const posY = entity.y || (Math.floor(idx / 18) * 45 + 40);
-        entityDiv.style.left = `${posX}px`;
-        entityDiv.style.top = `${posY}px`;
-        entityDiv.innerHTML = `${entity.emoji}<div class="entity-tooltip">${entity.name} | ${formatTime(entity.cost)}</div>`;
-        entityDiv.onclick = (e) => {
-            e.stopPropagation();
-            if (confirm(`${userName}, ¿eliminar este ${entity.name}?`)) {
-                if (entity.type === 'tree') {
-                    const index = plantedTrees.findIndex(t => t.id === entity.id);
-                    if (index !== -1) plantedTrees.splice(index, 1);
-                } else {
-                    const index = spawnedAnimals.findIndex(a => a.id === entity.id);
-                    if (index !== -1) spawnedAnimals.splice(index, 1);
-                }
-                renderEntities();
-                saveData();
-                updateStats();
-                showMessage(`🗑️ ${entity.name} eliminado`, "#ff9800", 1500);
-            }
-        };
-        overlay.appendChild(entityDiv);
-    });
+.item-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #F9FAFB;
+    border-radius: var(--border-radius-element);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    border: 1px solid transparent;
 }
 
-// ============ ESTADÍSTICAS ============
-function updateStats() {
-    const treeCountSpan = document.getElementById('tree-count');
-    if (treeCountSpan) treeCountSpan.innerText = plantedTrees.length;
-    const animalCountSpan = document.getElementById('animal-count');
-    if (animalCountSpan) animalCountSpan.innerText = spawnedAnimals.length;
-    const totalTime = [...plantedTrees, ...spawnedAnimals].reduce((sum, e) => sum + (e.cost || 0), 0);
-    const totalTimeSpan = document.getElementById('total-time');
-    if (totalTimeSpan) totalTimeSpan.innerText = formatTime(totalTime);
+.item-card:hover {
+    background: #F3F4F6;
+    transform: translateX(4px);
 }
 
-function clearGarden() {
-    if (confirm(`⚠️ ${userName}, ¿eliminar TODOS los árboles y animales?`)) {
-        plantedTrees = [];
-        spawnedAnimals = [];
-        renderEntities();
-        saveData();
-        updateStats();
-        showMessage("🗑️ Jardín limpiado", "#ff9800", 2000);
-    }
+.item-card.selected {
+    border-color: var(--primary-green);
+    background: #E8F5E9;
+    box-shadow: 0 4px 10px rgba(46, 125, 50, 0.1);
 }
 
-function setupGardenClick() {
-    console.log("Garden click setup completed");
+.item-emoji {
+    font-size: 28px;
+    width: 40px;
+    text-align: center;
+}
+
+.item-info {
+    flex: 1;
+}
+
+.item-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: #1F2937;
+}
+
+.item-cost {
+    font-size: 12px;
+    color: var(--gray-text-light);
+    margin-top: 2px;
+}
+
+/* --- Jardín --- */
+.garden-container {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.garden-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.garden-header h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1F2937;
+}
+
+.stats {
+    display: flex;
+    gap: 12px;
+}
+
+.stat-card {
+    background: #F3F4F6;
+    padding: 8px 16px;
+    border-radius: 40px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary-green);
+}
+
+.stat-label {
+    font-size: 10px;
+    color: var(--gray-text-light);
+    text-transform: uppercase;
+}
+
+.garden-area {
+    position: relative;
+    background: #A1887F; /* Color tierra base */
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+    min-height: 400px;
+    width: 100%;
+    aspect-ratio: 16/9;
+}
+
+.garden-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+}
+
+.entities-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+/* Entidades con aceleración GPU */
+.entity {
+    position: absolute;
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+    font-size: 24px;
+    filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.2));
+    /* GPU Acceleration trick */
+    will-change: transform;
+    transform: translate(-50%, -50%) translateZ(0);
+    transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.entity:active {
+    transform: translate(-50%, -50%) scale(1.2);
+    transition: transform 0.1s;
+}
+
+.entity .entity-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1F2937;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-size: 9px;
+    font-weight: 500;
+    white-space: nowrap;
+    display: none;
+    z-index: 100;
+    pointer-events: none;
+    margin-bottom: 4px;
+}
+
+.entity:hover .entity-tooltip {
+    display: block;
+}
+
+.garden-controls {
+    margin-top: 20px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.color-picker-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #F3F4F6;
+    padding: 8px 16px;
+    border-radius: 40px;
+}
+
+#brush-color {
+    width: 32px;
+    height: 32px;
+    border: 2px solid white;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* --- Panel de Estado --- */
+.status-panel {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.status-panel h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #1F2937;
+}
+
+.status-card {
+    background: #F9FAFB;
+    border-radius: 20px;
+    padding: 16px;
+    margin-bottom: 24px;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.status-item:last-child {
+    border-bottom: none;
+}
+
+.status-icon {
+    font-size: 20px;
+    width: 32px;
+    text-align: center;
+}
+
+.status-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--gray-text-light);
+    text-transform: uppercase;
+}
+
+.status-value {
+    display: block;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1F2937;
+}
+
+.selected-card {
+    background: #F9FAFB;
+    border-radius: 20px;
+    padding: 20px;
+    text-align: center;
+    border: 1px solid #E5E7EB;
+}
+
+/* --- Botones --- */
+.btn-primary, .btn-danger, .btn-secondary {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 40px;
+    font-weight: 600;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary {
+    background: var(--primary-green);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-green-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px -2px rgba(46, 125, 50, 0.3);
+}
+
+.btn-danger {
+    background: #DC2626;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #B91C1C;
+}
+
+.btn-secondary {
+    background: #E5E7EB;
+    color: #1F2937;
+}
+
+.btn-secondary:hover {
+    background: #D1D5DB;
+}
+
+.btn-small {
+    padding: 6px 14px;
+    font-size: 12px;
+}
+
+/* --- Toast Notifications --- */
+#toast-container {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.toast-msg {
+    padding: 12px 24px;
+    border-radius: 30px;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    animation: toastFadeIn 0.3s ease forwards, toastFadeOut 0.3s ease forwards 2.7s;
+    white-space: nowrap;
+}
+
+/* --- Animaciones --- */
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+@keyframes toastFadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes toastFadeOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-20px); visibility: hidden; }
+}
+
+@keyframes bounceIn {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+    70% { transform: translate(-50%, -50%) scale(0.9); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+/* --- Responsive --- */
+@media (min-width: 900px) {
+    body { padding: 32px; }
+    .container { flex-direction: row; align-items: stretch; height: calc(100vh - 64px); }
+    .tree-menu { flex: 1; max-width: 320px; }
+    .garden-container { flex: 3; }
+    .status-panel { flex: 1; max-width: 300px; }
+}
+
+@media (max-width: 600px) {
+    .stats { width: 100%; justify-content: space-between; }
+    .garden-controls { flex-direction: column; align-items: stretch; }
+    .color-picker-container { justify-content: center; order: 1; }
+    #clear-garden { order: 2; }
+    .timer-display { font-size: 48px; padding: 20px; }
+    .entity { font-size: 20px; }
 }
