@@ -6,8 +6,8 @@
         UNLOCK_DURATION: 1800,
         CELL_SIZE: 20,
         ANIMAL_MOVE_INTERVAL: 3000,
-        CHEAT_CODE: "409070110", // Código actualizado
-        STORAGE_KEY: 'focusForestV4' // Nueva clave para evitar conflictos
+        CHEAT_CODE: "409070110", // Código secreto
+        STORAGE_KEY: 'focusForestFinalV1' // Nueva clave para limpieza automática
     };
 
     // --- DATOS ---
@@ -32,8 +32,7 @@
         { id: 't18', name: "🌈 Arcoíris", rarity: "Legendario", cost: 300, emoji: "🌈" },
         { id: 't19', name: "👑 Real", rarity: "Legendario", cost: 400, emoji: "👑" },
         { id: 't20', name: "🌌 Cosmos", rarity: "Mítico", cost: 500, emoji: "🌌" },
-        { id: 't21', name: "🌍 Mundo", rarity: "Mítico", cost: 800, emoji: "🌍" },
-        { id: 't22', name: "☠️ Calavera", rarity: "Mítico", cost: 1000, emoji: "☠️" }
+        { id: 't21', name: "🌍 Mundo", rarity: "Mítico", cost: 800, emoji: "🌍" }
     ];
 
     const ANIMALS = [
@@ -56,9 +55,7 @@
         { id: 'a17', name: "🦄 Unicornio", rarity: "Legendario", cost: 250, emoji: "🦄" },
         { id: 'a18', name: "🐲 Dragón", rarity: "Legendario", cost: 300, emoji: "🐲" },
         { id: 'a19', name: "🦅 Águila", rarity: "Legendario", cost: 400, emoji: "🦅" },
-        { id: 'a20', name: "🦇 Murciélago", rarity: "Mítico", cost: 500, emoji: "🦇" },
-        { id: 'a21', name: "🐙 Kraken", rarity: "Mítico", cost: 800, emoji: "🐙" },
-        { id: 'a22', name: "👽 Alien", rarity: "Mítico", cost: 1000, emoji: "👽" }
+        { id: 'a20', name: "🦇 Murciélago", rarity: "Mítico", cost: 500, emoji: "🦇" }
     ];
 
     // --- ESTADO ---
@@ -88,23 +85,29 @@
 
     // --- INICIALIZACIÓN ---
     document.addEventListener('DOMContentLoaded', () => {
+        console.log("DOM Cargado"); // Debug
         loadState();
         initCanvas();
         bindEvents();
         
-        // Lógica de entrada corregida
-        const savedName = state.user.name;
-        
-        if (savedName) {
-            document.getElementById('user-name').value = savedName;
+        // Intentar login automático si hay nombre
+        if (state.user.name) {
+            console.log("Usuario encontrado:", state.user.name);
+            document.getElementById('user-name').value = state.user.name;
             startApp();
         } else {
+            console.log("Mostrando bienvenida");
             showScreen('welcome');
         }
     });
 
     function showScreen(id) {
-        document.querySelectorAll('.screen-layer').forEach(el => el.classList.remove('active'));
+        // Ocultar todo
+        document.getElementById('welcome-screen').classList.remove('active');
+        document.getElementById('blocker').classList.remove('active');
+        document.getElementById('main-app').style.display = 'none';
+
+        // Mostrar actual
         if (id === 'main') {
             document.getElementById('main-app').style.display = 'block';
         } else {
@@ -116,16 +119,22 @@
         const nameInput = document.getElementById('user-name');
         const name = nameInput.value.trim();
         
+        console.log("Intentando entrar con:", name); // Debug
+
         if (!name) {
-            alert("Por favor, escribe tu nombre para continuar.");
+            alert("Por favor escribe tu nombre");
             return;
         }
 
         state.user.name = name;
         saveState();
+        
         showScreen('main');
         updateUI();
         startAnimalLoop();
+        
+        // Necesario para que el canvas se dibuje bien al inicio
+        setTimeout(resizeCanvas, 100); 
     }
 
     function updateUI() {
@@ -193,20 +202,18 @@
 
         showScreen('main');
         playSound();
-        showToast(`¡${entityDef.name} listo para plantar! 🌱`, "#4CAF50");
+        showToast(`¡${entityDef.name} listo! 🌱`, "#4CAF50");
         
         document.getElementById('mode-status').textContent = "¡Planta ahora!";
         updateStats();
     }
 
-    // --- MANEJO DE VISIBILIDAD (BLOQUEO/DESBLOQUEO) ---
+    // --- VISIBILIDAD ---
     function handleVisibility() {
         if (document.hidden && state.app.isBlocked) {
-            // Pausar
             clearInterval(state.app.timerInterval);
             state.app.pausedTime = state.app.focusTimeRemaining;
         } else if (!document.hidden && state.app.isBlocked && state.app.pausedTime > 0) {
-            // Reanudar
             state.app.focusTimeRemaining = state.app.pausedTime;
             state.app.pausedTime = 0;
             clearInterval(state.app.timerInterval);
@@ -216,6 +223,7 @@
 
     // --- EVENTOS ---
     function bindEvents() {
+        console.log("Bind events"); // Debug
         document.getElementById('start-btn').onclick = startApp;
         document.getElementById('tab-trees').onclick = () => switchTab('tree');
         document.getElementById('tab-animals').onclick = () => switchTab('animal');
@@ -229,14 +237,12 @@
         gardenArea.addEventListener('touchstart', handleGardenTouch, { passive: false });
 
         document.addEventListener('visibilitychange', handleVisibility);
-
-        // Detección de código secreto mejorada
         document.getElementById('user-name').addEventListener('input', handleCheatInput);
         
         window.addEventListener('resize', debounce(resizeCanvas, 200));
     }
 
-    // --- CANVAS & GRID ---
+    // --- CANVAS ---
     function initCanvas() {
         canvas = document.getElementById('garden-canvas');
         ctx = canvas.getContext('2d');
@@ -256,11 +262,11 @@
     }
 
     function initGrid() {
+        if (canvasRect.width === 0) return;
         const cols = Math.ceil(canvasRect.width / CONFIG.CELL_SIZE);
         const rows = Math.ceil(canvasRect.height / CONFIG.CELL_SIZE);
         
-        // Mantener colores si existen y coinciden tamaño, sino reiniciar
-        if (state.garden.gridColors && state.garden.gridColors.length === rows && state.garden.gridColors[0].length === cols) {
+        if (state.garden.gridColors && state.garden.gridColors.length === rows && state.garden.gridColors[0] && state.garden.gridColors[0].length === cols) {
             return;
         }
         
@@ -269,7 +275,7 @@
     }
 
     function drawGrid() {
-        if (!ctx) return;
+        if (!ctx || canvasRect.width === 0) return;
         const cols = Math.ceil(canvasRect.width / CONFIG.CELL_SIZE);
         const rows = Math.ceil(canvasRect.height / CONFIG.CELL_SIZE);
         for (let r = 0; r < rows; r++) {
@@ -302,7 +308,7 @@
         if (state.app.isPlantingMode) {
             placeEntity(x, y);
         } else if (target.classList.contains('entity')) {
-            // Click en entidad manejado por el propio evento
+            // Click en entidad manejado por onclick propio
         } else if (!state.app.isBlocked) {
             showToast("Selecciona un elemento y pulsa 'Comenzar'", "#ff9800");
         }
@@ -395,7 +401,7 @@
     function startAnimalLoop() {
         clearInterval(state.app.animalInterval);
         state.app.animalInterval = setInterval(() => {
-            if (state.garden.animals.length === 0) return;
+            if (state.garden.animals.length === 0 || canvasRect.width === 0) return;
             state.garden.animals.forEach(animal => {
                 const moveX = (Math.random() - 0.5) * 40;
                 const moveY = (Math.random() - 0.5) * 40;
@@ -460,7 +466,7 @@
         container.innerHTML = `
             <div style="font-size:32px; margin-bottom:8px;">${item.emoji}</div>
             <p style="font-weight:700">${item.name}</p>
-            <p style="font-size:12px; color:var(--text-secondary)">Tiempo: ${cost} min</p>
+            <p style="font-size:12px; color:#666">Tiempo: ${cost} min</p>
             <button class="btn-primary" style="margin-top:12px; width:100%;" onclick="App.startFocus()">🌱 Comenzar</button>
         `;
     }
@@ -532,9 +538,7 @@
 
     function handleCheatInput(e) {
         const val = e.target.value;
-        // Acumular buffer
         state.app.cheatBuffer += e.data || "";
-        // Mantener buffer pequeño
         if (state.app.cheatBuffer.length > 20) state.app.cheatBuffer = state.app.cheatBuffer.slice(-20);
         
         if (state.app.cheatBuffer.includes(CONFIG.CHEAT_CODE)) {
@@ -543,7 +547,7 @@
             showToast("🎮 Modo Test Activado", "#ff9800");
             updateSelectedDisplay();
             renderMenu();
-            state.app.cheatBuffer = ""; // Resetear buffer
+            state.app.cheatBuffer = "";
         }
     }
 
@@ -566,12 +570,11 @@
         if (saved) {
             try {
                 const data = JSON.parse(saved);
-                // Cargar datos de forma segura
                 if(data.user) state.user = data.user;
                 if(data.garden) state.garden = data.garden;
                 if(data.app) state.app.cheatMode = data.app.cheatMode || false;
             } catch(e) {
-                console.error("Error loading data", e);
+                console.error("Error loading data, resetting...", e);
                 localStorage.removeItem(CONFIG.STORAGE_KEY);
             }
         }
