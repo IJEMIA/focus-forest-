@@ -7,37 +7,37 @@
     <meta name="description" content="Focus Forest - Cultiva tu concentración.">
     <title>Focus Forest 🌳</title>
 
+    <!-- Fuentes -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Estilos -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- PANTALLA DE BIENVENIDA -->
+    <!-- 1. Pantalla de Bienvenida -->
     <div id="welcome-screen" class="screen-layer active">
         <div class="welcome-card">
             <div class="welcome-icon">🌳</div>
             <h1>Focus Forest</h1>
-            <p>Concéntrate, cultiva tu jardín y relájate.</p>
+            <p>Tu jardín de concentración</p>
             
-            <input type="text" 
-                   id="user-name" 
-                   placeholder="¿Cómo te llamas?" 
-                   maxlength="20" 
-                   autocomplete="off" 
-                   aria-label="Ingresa tu nombre">
-                   
+            <!-- ID correcto para el JS -->
+            <input type="text" id="user-name" placeholder="Escribe tu nombre..." maxlength="20" autocomplete="off">
+            
+            <!-- ID correcto para el JS -->
             <button id="start-btn" class="btn-primary">🌱 Entrar</button>
         </div>
     </div>
 
-    <!-- OVERLAY DE BLOQUEO (FOCUS MODE) -->
+    <!-- 2. Pantalla de Bloqueo (Focus Mode) -->
     <div id="blocker" class="screen-layer">
         <div class="blocker-content">
             <div class="lock-icon">🌿</div>
             <h1>Modo Enfoque</h1>
-            <p id="blocker-message">Cultivando tu árbol...</p>
+            <p id="blocker-message">Preparando...</p>
             
             <div class="timer-display">
                 <span id="timer">00:00</span>
@@ -51,17 +51,16 @@
             </div>
             
             <div class="blocker-footer">
-                <p>¡Mantén el enfoque! 💪</p>
-                <p class="small-text">El tiempo se pausará si sales, ¡vuelve pronto!</p>
+                <p>¡No te rindas! 💪</p>
             </div>
         </div>
     </div>
 
-    <!-- INTERFAZ PRINCIPAL -->
+    <!-- 3. Interfaz Principal -->
     <div id="main-app" style="display: none;">
         <div class="container">
             
-            <!-- Panel Izquierdo: Tienda -->
+            <!-- Panel Tienda -->
             <aside class="tree-menu card">
                 <div class="menu-tabs">
                     <button id="tab-trees" class="tab-btn active">🌳 Árboles</button>
@@ -71,7 +70,7 @@
                 <div id="animal-list" class="item-list hidden"></div>
             </aside>
 
-            <!-- Panel Central: Jardín -->
+            <!-- Panel Jardín -->
             <main class="garden-container card">
                 <header class="garden-header">
                     <h3 id="garden-title">🌱 Mi Jardín</h3>
@@ -99,15 +98,15 @@
                 <footer class="garden-controls">
                     <div class="color-picker-container">
                         <label for="brush-color">🎨</label>
-                        <input type="color" id="brush-color" value="#4caf50" title="Color del pincel">
+                        <input type="color" id="brush-color" value="#4caf50">
                         <button id="toggle-coloring-mode" class="btn-secondary btn-small">Pincel</button>
-                        <button id="reset-all-colors" class="btn-secondary btn-small" title="Restaurar tierra">🧹</button>
+                        <button id="reset-all-colors" class="btn-secondary btn-small">🧹</button>
                     </div>
                     <button id="clear-garden" class="btn-danger btn-small">🗑️ Limpiar</button>
                 </footer>
             </main>
 
-            <!-- Panel Derecho: Estado -->
+            <!-- Panel Estado -->
             <aside class="status-panel card">
                 <h3>📊 Tu Progreso</h3>
                 <div class="status-card">
@@ -135,7 +134,7 @@
                     <div class="status-item">
                         <span class="status-icon">🛡️</span>
                         <div>
-                            <span class="status-label">Acumulado</span>
+                            <span class="status-label">Total</span>
                             <span class="status-value" id="total-blocked-time">0 min</span>
                         </div>
                     </div>
@@ -154,6 +153,7 @@
     <!-- Notificaciones -->
     <div id="toast-container"></div>
 
+    <!-- Script -->
     <script src="script.js"></script>
 </body>
 </html>
