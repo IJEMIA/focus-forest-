@@ -2,65 +2,46 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#2E7D32">
-    <meta name="description" content="Focus Forest - Cultiva tu concentración.">
-    <title>Focus Forest 🌳</title>
-
-    <!-- Fuentes -->
+    <title>Focus Forest</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Estilos -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- 1. Pantalla de Bienvenida -->
+    <!-- BIENVENIDA -->
     <div id="welcome-screen" class="screen-layer active">
         <div class="welcome-card">
             <div class="welcome-icon">🌳</div>
             <h1>Focus Forest</h1>
             <p>Tu jardín de concentración</p>
-            
-            <!-- ID correcto para el JS -->
-            <input type="text" id="user-name" placeholder="Escribe tu nombre..." maxlength="20" autocomplete="off">
-            
-            <!-- ID correcto para el JS -->
+            <input type="text" id="user-name" placeholder="Tu nombre..." maxlength="20" autocomplete="off">
             <button id="start-btn" class="btn-primary">🌱 Entrar</button>
         </div>
     </div>
 
-    <!-- 2. Pantalla de Bloqueo (Focus Mode) -->
+    <!-- BLOQUEO -->
     <div id="blocker" class="screen-layer">
         <div class="blocker-content">
             <div class="lock-icon">🌿</div>
             <h1>Modo Enfoque</h1>
             <p id="blocker-message">Preparando...</p>
-            
-            <div class="timer-display">
-                <span id="timer">00:00</span>
-            </div>
-            
+            <div class="timer-display"><span id="timer">00:00</span></div>
             <div class="progress-bar-container">
-                <div class="progress-bar">
-                    <div id="progress-fill"></div>
-                </div>
+                <div class="progress-bar"><div id="progress-fill"></div></div>
                 <div id="progress-percentage">0%</div>
             </div>
-            
-            <div class="blocker-footer">
-                <p>¡No te rindas! 💪</p>
-            </div>
+            <div class="blocker-footer">¡Mantén el enfoque! 💪</div>
         </div>
     </div>
 
-    <!-- 3. Interfaz Principal -->
+    <!-- APP PRINCIPAL -->
     <div id="main-app" style="display: none;">
         <div class="container">
-            
-            <!-- Panel Tienda -->
+            <!-- Tienda -->
             <aside class="tree-menu card">
                 <div class="menu-tabs">
                     <button id="tab-trees" class="tab-btn active">🌳 Árboles</button>
@@ -70,31 +51,20 @@
                 <div id="animal-list" class="item-list hidden"></div>
             </aside>
 
-            <!-- Panel Jardín -->
+            <!-- Jardín -->
             <main class="garden-container card">
                 <header class="garden-header">
-                    <h3 id="garden-title">🌱 Mi Jardín</h3>
+                    <h3 id="garden-title">Mi Jardín</h3>
                     <div class="stats">
-                        <div class="stat-card">
-                            <span class="stat-value" id="tree-count">0</span>
-                            <span class="stat-label">Árboles</span>
-                        </div>
-                        <div class="stat-card">
-                            <span class="stat-value" id="animal-count">0</span>
-                            <span class="stat-label">Animales</span>
-                        </div>
-                        <div class="stat-card">
-                            <span class="stat-value" id="total-time">0m</span>
-                            <span class="stat-label">Enfoque</span>
-                        </div>
+                        <div class="stat-card"><span class="stat-value" id="tree-count">0</span><span class="stat-label">Árboles</span></div>
+                        <div class="stat-card"><span class="stat-value" id="animal-count">0</span><span class="stat-label">Animales</span></div>
+                        <div class="stat-card"><span class="stat-value" id="total-time">0m</span><span class="stat-label">Enfoque</span></div>
                     </div>
                 </header>
-
                 <div id="garden-area" class="garden-area">
-                    <canvas id="garden-canvas" class="garden-canvas"></canvas>
+                    <canvas id="garden-canvas"></canvas>
                     <div id="entities-overlay" class="entities-overlay"></div>
                 </div>
-
                 <footer class="garden-controls">
                     <div class="color-picker-container">
                         <label for="brush-color">🎨</label>
@@ -106,54 +76,24 @@
                 </footer>
             </main>
 
-            <!-- Panel Estado -->
+            <!-- Estado -->
             <aside class="status-panel card">
-                <h3>📊 Tu Progreso</h3>
+                <h3>📊 Progreso</h3>
                 <div class="status-card">
-                    <div class="status-item">
-                        <span class="status-icon">👤</span>
-                        <div>
-                            <span class="status-label">Jardinero</span>
-                            <span class="status-value" id="user-name-display">---</span>
-                        </div>
-                    </div>
-                    <div class="status-item">
-                        <span class="status-icon">⚡</span>
-                        <div>
-                            <span class="status-label">Estado</span>
-                            <span class="status-value" id="mode-status">Libre</span>
-                        </div>
-                    </div>
-                    <div class="status-item">
-                        <span class="status-icon">⏱️</span>
-                        <div>
-                            <span class="status-label">Siguiente</span>
-                            <span class="status-value" id="next-unlock">---</span>
-                        </div>
-                    </div>
-                    <div class="status-item">
-                        <span class="status-icon">🛡️</span>
-                        <div>
-                            <span class="status-label">Total</span>
-                            <span class="status-value" id="total-blocked-time">0 min</span>
-                        </div>
-                    </div>
+                    <div class="status-item"><span class="status-icon">👤</span><div><span class="status-label">Jardinero</span><span class="status-value" id="user-name-display">---</span></div></div>
+                    <div class="status-item"><span class="status-icon">⚡</span><div><span class="status-label">Estado</span><span class="status-value" id="mode-status">Libre</span></div></div>
+                    <div class="status-item"><span class="status-icon">⏱️</span><div><span class="status-label">Siguiente</span><span class="status-value" id="next-unlock">---</span></div></div>
+                    <div class="status-item"><span class="status-icon">🛡️</span><div><span class="status-label">Total</span><span class="status-value" id="total-blocked-time">0 min</span></div></div>
                 </div>
-                
                 <div id="selected-entity">
                     <h4>✨ Selección</h4>
-                    <div id="selected-display" class="selected-card">
-                        Cargando...
-                    </div>
+                    <div id="selected-display" class="selected-card">Cargando...</div>
                 </div>
             </aside>
         </div>
     </div>
 
-    <!-- Notificaciones -->
     <div id="toast-container"></div>
-
-    <!-- Script -->
     <script src="script.js"></script>
 </body>
 </html>
