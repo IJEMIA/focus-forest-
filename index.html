@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Focus Forest - Jardín con bloqueo de celular</title>
+    <title>Focus Forest - Jardín de Enfoque</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..700&display=swap" rel="stylesheet">
@@ -18,7 +18,7 @@
             <p>Tu jardín de concentración y recompensa</p>
             <input type="text" id="user-name" placeholder="Tu nombre" maxlength="30" autocomplete="off">
             <button id="start-btn" class="btn-primary">🌱 Comenzar mi jardín</button>
-            <p class="cheat-hint">(Modo prueba: escribe el código secreto)</p>
+            <p class="cheat-hint">🎮 Modo prueba: escribe "23"</p>
         </div>
     </div>
 
@@ -47,87 +47,68 @@
     <!-- Interfaz principal -->
     <div id="main-app" style="display: none;">
         <div class="container">
-            <!-- Panel izquierdo: Tienda -->
-            <div class="tree-menu card">
-                <div class="menu-tabs">
-                    <button id="tab-trees" class="tab-btn active">🌳 Árboles</button>
-                    <button id="tab-animals" class="tab-btn">🐾 Animales</button>
+            <!-- Panel superior: stats rápidos -->
+            <div class="quick-stats glass">
+                <div class="stat-badge">
+                    <span class="stat-emoji">🌲</span>
+                    <span class="stat-number" id="tree-count">0</span>
                 </div>
-                <div id="tree-list" class="item-list"></div>
-                <div id="animal-list" class="item-list" style="display: none;"></div>
+                <div class="stat-badge">
+                    <span class="stat-emoji">🐾</span>
+                    <span class="stat-number" id="animal-count">0</span>
+                </div>
+                <div class="stat-badge">
+                    <span class="stat-emoji">🏠</span>
+                    <span class="stat-number" id="house-count">0</span>
+                </div>
+                <div class="stat-badge">
+                    <span class="stat-emoji">⏱️</span>
+                    <span class="stat-number" id="total-time">0</span>
+                </div>
             </div>
 
-            <!-- Panel central: Jardín -->
-            <div class="garden-container card">
+            <!-- Panel de pestañas -->
+            <div class="tabs-container glass">
+                <button id="tab-trees" class="tab-btn active">🌳 Plantas</button>
+                <button id="tab-animals" class="tab-btn">🐾 Animales</button>
+                <button id="tab-houses" class="tab-btn">🏠 Casas</button>
+            </div>
+
+            <!-- Lista de elementos según pestaña -->
+            <div id="tree-list" class="items-grid"></div>
+            <div id="animal-list" class="items-grid" style="display: none;"></div>
+            <div id="house-list" class="items-grid" style="display: none;"></div>
+
+            <!-- Jardín -->
+            <div class="garden-container glass">
                 <div class="garden-header">
                     <h3 id="garden-title">🌱 Mi Jardín</h3>
-                    <div class="stats">
-                        <div class="stat-card">
-                            <span class="stat-value" id="tree-count">0</span>
-                            <span class="stat-label">Árboles</span>
-                        </div>
-                        <div class="stat-card">
-                            <span class="stat-value" id="animal-count">0</span>
-                            <span class="stat-label">Animales</span>
-                        </div>
-                        <div class="stat-card">
-                            <span class="stat-value" id="total-time">0</span>
-                            <span class="stat-label">Minutos</span>
-                        </div>
+                    <div class="garden-controls-top">
+                        <button id="toggle-coloring-mode" class="btn-small btn-secondary">🎨</button>
+                        <button id="clear-garden" class="btn-small btn-danger">🗑️</button>
                     </div>
                 </div>
                 <div class="garden-area" id="garden-area">
                     <canvas id="garden-canvas" class="garden-canvas"></canvas>
                     <div id="entities-overlay" class="entities-overlay"></div>
                 </div>
-                <div class="garden-controls">
-                    <div class="color-picker-container">
-                        <label>🎨 Pincel:</label>
-                        <input type="color" id="brush-color" value="#4caf50">
-                        <button id="toggle-coloring-mode" class="btn-secondary btn-small">Modo Coloreo: OFF</button>
-                        <button id="reset-all-colors" class="btn-secondary btn-small">Reset</button>
-                    </div>
-                    <button id="clear-garden" class="btn-danger">🗑️ Limpiar Jardín</button>
+                <div class="color-picker-bar">
+                    <input type="color" id="brush-color" value="#4caf50">
+                    <span>Color pincel</span>
+                    <button id="reset-all-colors" class="btn-small btn-secondary">Reset suelo</button>
                 </div>
             </div>
 
-            <!-- Panel derecho: Estado -->
-            <div class="status-panel card">
-                <h3>📊 Estado del Jardinero</h3>
-                <div class="status-card">
-                    <div class="status-item">
-                        <span class="status-icon">👤</span>
-                        <div>
-                            <span class="status-label">Jardinero</span>
-                            <span class="status-value" id="user-name-display">---</span>
-                        </div>
-                    </div>
-                    <div class="status-item">
-                        <span class="status-icon">🟢</span>
-                        <div>
-                            <span class="status-label">Modo</span>
-                            <span class="status-value" id="mode-status">Libre</span>
-                        </div>
-                    </div>
-                    <div class="status-item">
-                        <span class="status-icon">⏰</span>
-                        <div>
-                            <span class="status-label">Para añadir</span>
-                            <span class="status-value" id="next-unlock">---</span>
-                        </div>
-                    </div>
-                    <div class="status-item">
-                        <span class="status-icon">🔒</span>
-                        <div>
-                            <span class="status-label">Enfoque acumulado</span>
-                            <span class="status-value" id="total-blocked-time">0 min</span>
-                        </div>
+            <!-- Panel de selección actual -->
+            <div class="selected-panel glass">
+                <div id="selected-display" class="selected-card">
+                    <div class="selected-emoji">🌲</div>
+                    <div class="selected-info">
+                        <span class="selected-name">Selecciona algo</span>
+                        <span class="selected-cost">---</span>
                     </div>
                 </div>
-                <div id="selected-entity">
-                    <h4 id="selected-title">🌲 Selección actual</h4>
-                    <div id="selected-display" class="selected-card">Ninguno</div>
-                </div>
+                <button id="start-entity-btn" class="btn-primary start-btn">🌱 COMENZAR ENFOQUE</button>
             </div>
         </div>
     </div>
