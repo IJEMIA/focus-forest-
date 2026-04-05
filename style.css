@@ -223,4 +223,301 @@ body {
     gap: 8px;
 }
 
-.tab
+.tab-btn {
+    flex: 1;
+    padding: 12px;
+    background: #F3F4F6;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition);
+    color: var(--text-secondary);
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.tab-btn.active {
+    background: white;
+    color: var(--primary-green);
+    box-shadow: 0 -2px 0 var(--primary-green) inset;
+}
+
+.item-list {
+    padding: 12px;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.item-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #F9FAFB;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition);
+    border: 1px solid transparent;
+}
+
+.item-card:hover {
+    transform: translateX(4px);
+    background: #F3F4F6;
+}
+
+.item-card.selected {
+    background: var(--primary-green-light);
+    border-color: var(--primary-green);
+    box-shadow: 0 2px 10px rgba(46, 125, 50, 0.15);
+}
+
+.item-emoji { font-size: 28px; width: 40px; text-align: center; flex-shrink: 0; }
+.item-info { flex: 1; min-width: 0; }
+.item-name { font-weight: 600; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
+.item-cost { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+/* --- Jardín Principal (Canvas) --- */
+.garden-container {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    flex: 1;
+}
+
+.garden-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.garden-header h3 { font-size: 18px; font-weight: 700; color: var(--primary-green-dark); }
+
+.stats { display: flex; gap: 8px; }
+.stat-card {
+    background: #F3F4F6;
+    padding: 6px 12px;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.stat-value { font-weight: 700; font-size: 14px; color: var(--primary-green); }
+.stat-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; }
+
+.garden-area {
+    position: relative;
+    width: 100%;
+    flex: 1;
+    min-height: 300px;
+    background: var(--bg-garden);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);
+    touch-action: none; /* Mejor manejo táctil */
+}
+
+.garden-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.entities-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Permite clics al canvas */
+}
+
+.entity {
+    position: absolute;
+    pointer-events: auto; /* Reactiva clics para el emoji */
+    cursor: pointer;
+    font-size: 24px;
+    filter: drop-shadow(1px 2px 1px rgba(0,0,0,0.3));
+    transition: left 2.5s linear, top 2.5s linear; /* Movimiento suave animals */
+    user-select: none;
+}
+
+.entity:hover {
+    transform: scale(1.2);
+    z-index: 100;
+}
+
+/* Tooltip en entidad */
+.entity-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    white-space: nowrap;
+    display: none;
+    margin-bottom: 4px;
+}
+
+.entity:hover .entity-tooltip { display: block; }
+
+/* Controles del jardín */
+.garden-controls {
+    margin-top: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.color-picker-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #F3F4F6;
+    padding: 8px 16px;
+    border-radius: var(--radius-full);
+}
+
+#brush-color {
+    width: 28px;
+    height: 28px;
+    border: 2px solid white;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 0;
+}
+
+/* --- Panel Estado (Sidebar Derecho) --- */
+.status-panel {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.status-card {
+    background: #F9FAFB;
+    border-radius: var(--radius-md);
+    padding: 12px;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.status-item:last-child { border-bottom: none; }
+.status-icon { font-size: 18px; width: 24px; text-align: center; }
+.status-label { font-size: 11px; color: var(--text-muted); display: block; }
+.status-value { font-size: 15px; font-weight: 600; color: var(--text-main); }
+
+#selected-display {
+    background: #F9FAFB;
+    padding: 16px;
+    border-radius: var(--radius-md);
+    text-align: center;
+    border: 1px dashed #E5E7EB;
+}
+
+/* --- Botones --- */
+.btn-primary, .btn-danger, .btn-secondary {
+    padding: 10px 20px;
+    border: none;
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all var(--transition);
+    text-align: center;
+}
+
+.btn-primary {
+    background: var(--primary-green);
+    color: white;
+    box-shadow: 0 4px 14px rgba(46, 125, 50, 0.3);
+}
+
+.btn-primary:hover { transform: translateY(-2px); filter: brightness(1.05); }
+.btn-primary:active { transform: translateY(0); }
+
+.btn-danger { background: #EF4444; color: white; }
+.btn-danger:hover { background: #DC2626; }
+
+.btn-secondary { background: #E5E7EB; color: var(--text-main); }
+.btn-secondary:hover { background: #D1D5DB; }
+
+/* --- Notificaciones (Toast) --- */
+#toast-container {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.toast-msg {
+    padding: 12px 24px;
+    border-radius: var(--radius-full);
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    animation: toastUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* --- Animaciones --- */
+@keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(3deg); }
+}
+
+@keyframes bounceIn {
+    0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+    90% { transform: translate(-50%, -50%) scale(1.05); }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+@keyframes toastUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Responsive --- */
+@media (min-width: 900px) {
+    body { padding: 32px; height: 100vh; }
+    .container { flex-direction: row; height: 100%; }
+    .tree-menu { width: 280px; flex-shrink: 0; }
+    .garden-container { flex: 1; min-width: 0; }
+    .status-panel { width: 260px; flex-shrink: 0; }
+}
+
+@media (max-width: 600px) {
+    .timer-display { font-size: 56px; padding: 10px; }
+    .entity { font-size: 20px; }
+    .garden-controls { flex-direction: column; align-items: stretch; }
+    .color-picker-container { justify-content: center; order: 2; }
+    #clear-garden { order: 3; }
+}
+
+/* Utilidades */
+.hidden { display: none !important; }
